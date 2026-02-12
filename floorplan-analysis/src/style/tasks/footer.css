@@ -1,0 +1,32 @@
+.footer-bar {
+  background: #6B7A5A;
+  color: white;
+  padding: 20px 24px;
+  margin-top: 40px;
+  box-shadow: 0 -2px 8px rgba(139,165,114,0.12);
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-text {
+  margin: 6px 0;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.footer-link {
+  color: #A1C084;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}

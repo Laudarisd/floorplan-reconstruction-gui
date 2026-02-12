@@ -1,0 +1,158 @@
+.visualization-section {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.gif-content {
+  display: block;
+}
+
+.viz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #8BA572 0%, #6B7A5A 100%);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.zoom-label {
+  margin-left: 10px;
+  font-weight: bold;
+  align-self: center;
+}
+
+.annotation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.annotation-controls label {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.dimension-controls {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+  width: 100%;
+}
+
+.dimension-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.viewer-panel {
+  width: 1000px;
+  height: 800px;
+  max-width: 100%;
+  overflow: scroll !important;
+  overflow-x: scroll !important;
+  overflow-y: scroll !important;
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  background: #f5f5f5;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  margin: 0 auto;
+  scrollbar-color: #888 #f1f1f1;
+  scrollbar-width: auto;
+}
+
+.viewer-panel::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.viewer-panel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.viewer-panel::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.viewer-panel::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.zoom-container {
+  position: relative !important;
+  display: inline-block;
+  transform-origin: top left;
+  transform: none;
+}
+
+.main-image {
+  display: block;
+  position: relative;
+}
+
+.main-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.viz-grid {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.viz-item {
+  display: none;
+  margin-top: 20px;
+}
+
+.viz-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.viz-img {
+  max-width: 100%;
+  border: 1px solid #ddd;
+}
+
+@media (max-width: 1024px) {
+  .viz-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .viz-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
