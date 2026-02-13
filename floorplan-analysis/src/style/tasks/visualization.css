@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: minmax(100px, 118px) minmax(0, 1fr);
   gap: 12px;
-  align-items: start;
+  align-items: center;
 }
 
 .viz-section-title {
@@ -57,6 +57,7 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  align-self: center;
 }
 
 .viz-action-btn {
@@ -229,6 +230,7 @@
 @media (max-width: 1024px) {
   .viz-shell {
     grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .viz-actions-sidebar {
