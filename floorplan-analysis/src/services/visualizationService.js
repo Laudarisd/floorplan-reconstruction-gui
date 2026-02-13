@@ -426,8 +426,8 @@ export const drawAnnotations = (
           const isDimOcr = o.kind === 'ocr_text' && o.cropIdx !== undefined;
 
           if (isDimOcr) {
-            // For dimension OCR, only show the index without the text
-            displayLabel = `[${o.cropIdx}]`;
+            const dimText = String(o.label || '').trim();
+            displayLabel = dimText ? `[${o.cropIdx}] ${dimText}` : `[${o.cropIdx}]`;
           }
 
           const tw = ctx.measureText(displayLabel).width;

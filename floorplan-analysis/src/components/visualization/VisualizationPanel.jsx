@@ -6,14 +6,14 @@ import '../../style/tasks/visualization.css';
 const VIZ_COPY = {
   loadingCaption: 'Preparing visualization...',
   empty: 'Upload an image to see visualization',
-  showText: '👁️ Show Annotation Text',
-  hideText: '👁️ Hide Annotation Text',
-  showPoints: '◯ Show Key Points',
-  hidePoints: '◯ Hide Key Points',
-  zoomIn: '🔍+ Zoom In',
-  zoomOut: '🔍- Zoom Out',
-  reset: '↺ Reset Zoom',
-  dimensionLabel: '📍 Dimension Areas:',
+  showText: 'Show Annotation Text',
+  hideText: 'Hide Annotation Text',
+  showPoints: 'Show Key Points',
+  hidePoints: 'Hide Key Points',
+  zoomIn: 'Zoom In',
+  zoomOut: 'Zoom Out',
+  reset: 'Reset Zoom',
+  dimensionLabel: 'Dimension Areas:',
 };
 
 const VIZ_CLASSNAMES = {
@@ -75,7 +75,7 @@ const VisualizationPanel = ({
   }, [viz]);
 
   const handleDimensionToggle = useCallback((e, idx) => {
-    viz.toggleDimensionIndex(parseInt(idx));
+    viz.toggleDimensionIndex(parseInt(idx, 10));
   }, [viz]);
 
   const renderClassControls = () => {
@@ -130,49 +130,55 @@ const VisualizationPanel = ({
   };
 
   const renderContent = () => {
-    if (!uploadedImage) {
-      return <p>{VIZ_COPY.empty}</p>;
-    }
-
     return (
       <div id="vizContent" className={VIZ_CLASSNAMES.content}>
-        <div className="viz-actions">
-          <button
-            onClick={() => viz.setShowAnnotationText(!viz.showAnnotationText)}
-            className="btn"
-          >
-            {viz.showAnnotationText ? VIZ_COPY.hideText : VIZ_COPY.showText}
-          </button>
-          <button
-            onClick={() => viz.setShowKeyPoints(!viz.showKeyPoints)}
-            className="btn"
-          >
-            {viz.showKeyPoints ? VIZ_COPY.hidePoints : VIZ_COPY.showPoints}
-          </button>
-          <button onClick={viz.zoomIn} className="btn">
-            {VIZ_COPY.zoomIn}
-          </button>
-          <button onClick={viz.zoomOut} className="btn">
-            {VIZ_COPY.zoomOut}
-          </button>
-          <button onClick={viz.resetZoom} className="btn">
-            {VIZ_COPY.reset}
-          </button>
-          <span className="zoom-label">Zoom: {viz.getZoomPercentage()}%</span>
-        </div>
+        <div className="viz-workspace">
+          <div className="viz-actions-sidebar">
+            <button
+              onClick={() => viz.setShowAnnotationText(!viz.showAnnotationText)}
+              className="btn viz-action-btn"
+              disabled={!uploadedImage}
+            >
+              {viz.showAnnotationText ? VIZ_COPY.hideText : VIZ_COPY.showText}
+            </button>
+            <button
+              onClick={() => viz.setShowKeyPoints(!viz.showKeyPoints)}
+              className="btn viz-action-btn"
+              disabled={!uploadedImage}
+            >
+              {viz.showKeyPoints ? VIZ_COPY.hidePoints : VIZ_COPY.showPoints}
+            </button>
+            <button onClick={viz.zoomIn} className="btn viz-action-btn" disabled={!uploadedImage}>
+              {VIZ_COPY.zoomIn}
+            </button>
+            <button onClick={viz.zoomOut} className="btn viz-action-btn" disabled={!uploadedImage}>
+              {VIZ_COPY.zoomOut}
+            </button>
+            <button onClick={viz.resetZoom} className="btn viz-action-btn" disabled={!uploadedImage}>
+              {VIZ_COPY.reset}
+            </button>
+            <span className="zoom-label">Zoom: {viz.getZoomPercentage()}%</span>
+          </div>
 
-        {renderClassControls()}
+          <div className="viz-main">
+            {renderClassControls()}
 
-        <div id="viewer" ref={viz.viewerRef} className={VIZ_CLASSNAMES.viewer}>
-          <div id="zoomContainer" className={VIZ_CLASSNAMES.zoomContainer}>
-            <img
-              id="mainImage"
-              src={uploadedImage}
-              alt="Floorplan"
-              className="main-image"
-              onLoad={() => viz.handleImageLoad()}
-            />
-            <canvas id="mainCanvas" ref={viz.canvasRef} className="main-canvas" />
+            {!uploadedImage ? (
+              <div className="viz-empty-state">{VIZ_COPY.empty}</div>
+            ) : (
+              <div id="viewer" ref={viz.viewerRef} className={VIZ_CLASSNAMES.viewer}>
+                <div id="zoomContainer" className={VIZ_CLASSNAMES.zoomContainer}>
+                  <img
+                    id="mainImage"
+                    src={uploadedImage}
+                    alt="Floorplan"
+                    className="main-image"
+                    onLoad={() => viz.handleImageLoad()}
+                  />
+                  <canvas id="mainCanvas" ref={viz.canvasRef} className="main-canvas" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

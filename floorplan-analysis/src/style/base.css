@@ -14,7 +14,7 @@ body {
 
 .container {
   flex: 1;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -27,9 +27,10 @@ body {
 }
 
 .visualization-row {
-  display: flex;
-  gap: 20px;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+  gap: 24px;
+  align-items: start;
   margin-bottom: 30px;
 }
 
@@ -39,6 +40,6 @@ body {
   }
 
   .visualization-row {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 }

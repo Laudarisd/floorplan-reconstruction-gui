@@ -29,6 +29,10 @@ const ZIP_CLASSNAMES = {
   scaleInfo: 'scale-info',
 };
 
+const isJsonFile = (fileName) => fileName.toLowerCase().endsWith('.json');
+const isCropJsonFile = (fileName) =>
+  isJsonFile(fileName) && fileName.toLowerCase().includes('crop');
+
 const ZipContentsPanel = ({
   zipBlob,
   loading,
@@ -62,10 +66,41 @@ const ZipContentsPanel = ({
         onZipDataReady(result);
       }
 
+      const sortedFiles = sortFiles([...result.files]);
+      const defaultJsonFile =
+        sortedFiles.find((name) => isCropJsonFile(name)) ||
+        sortedFiles.find((name) => isJsonFile(name));
+
+      if (defaultJsonFile) {
+        const defaultFileData = await readFileData(result.zip, defaultJsonFile);
+        onFileSelected(defaultFileData);
+        setLoading((prev) => ({ ...prev, dataCheck: false }));
+      }
+
       setLoading((prev) => ({ ...prev, dataContent: false, visualization: false }));
     } catch (error) {
       console.error('Error extracting ZIP:', error);
     }
+  };
+
+  const readFileData = async (activeZip, fileName) => {
+    const fileData = { fileName };
+
+    if (fileName.endsWith('.json')) {
+      const content = await activeZip.files[fileName].async('string');
+      fileData.type = 'json';
+      fileData.content = JSON.parse(content);
+    } else if (fileName.match(/\.(png|jpg|jpeg)$/)) {
+      const blob = await activeZip.files[fileName].async('blob');
+      fileData.type = 'image';
+      fileData.url = URL.createObjectURL(blob);
+    } else {
+      const content = await activeZip.files[fileName].async('string');
+      fileData.type = 'text';
+      fileData.content = content;
+    }
+
+    return fileData;
   };
 
   // Single-click file selection (JSON/image/text)
@@ -73,22 +108,7 @@ const ZipContentsPanel = ({
     if (!zip) return;
 
     try {
-      const fileData = { fileName };
-
-      if (fileName.endsWith('.json')) {
-        const content = await zip.files[fileName].async('string');
-        fileData.type = 'json';
-        fileData.content = JSON.parse(content);
-      } else if (fileName.match(/\.(png|jpg|jpeg)$/)) {
-        const blob = await zip.files[fileName].async('blob');
-        fileData.type = 'image';
-        fileData.url = URL.createObjectURL(blob);
-      } else {
-        const content = await zip.files[fileName].async('string');
-        fileData.type = 'text';
-        fileData.content = content;
-      }
-
+      const fileData = await readFileData(zip, fileName);
       onFileSelected(fileData);
       setLoading((prev) => ({ ...prev, dataCheck: false }));
     } catch (error) {

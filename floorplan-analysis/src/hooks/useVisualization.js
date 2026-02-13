@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   createRoiTransform,
   normalizeObjectsForRender,
@@ -25,6 +25,8 @@ export const useVisualization = (uploadedImage) => {
   const canvasRef = useRef(null);
   const viewerRef = useRef(null);
   const minZoomRef = useRef(1); // Store the fit-to-screen zoom level
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // Initialize image dimensions on load
   // Compute image size + fit-to-view zoom
@@ -155,6 +157,31 @@ export const useVisualization = (uploadedImage) => {
   const zoomIn = () => setZoom(prev => Math.min(prev * 1.1, 5));
   const zoomOut = () => setZoom(prev => Math.max(prev * 0.9, minZoomRef.current));
   const resetZoom = () => setZoom(minZoomRef.current);
+
+  const zoomToPoint = useCallback((nextZoom, clientX, clientY) => {
+    const viewer = viewerRef.current;
+    if (!viewer || !originalWidth || !originalHeight) return;
+
+    const clampedZoom = Math.max(minZoomRef.current, Math.min(nextZoom, 5));
+    if (Math.abs(clampedZoom - zoom) < 1e-6) return;
+
+    const rect = viewer.getBoundingClientRect();
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
+    const contentX = viewer.scrollLeft + mouseX;
+    const contentY = viewer.scrollTop + mouseY;
+
+    const oldScaledW = originalWidth * zoom || 1;
+    const oldScaledH = originalHeight * zoom || 1;
+    const fx = contentX / oldScaledW;
+    const fy = contentY / oldScaledH;
+
+    setZoom(clampedZoom);
+    requestAnimationFrame(() => {
+      viewer.scrollLeft = fx * (originalWidth * clampedZoom) - mouseX;
+      viewer.scrollTop = fy * (originalHeight * clampedZoom) - mouseY;
+    });
+  }, [zoom, originalWidth, originalHeight]);
   
   const getZoomPercentage = () => {
     if (minZoomRef.current === 0) return 100;
@@ -173,6 +200,64 @@ export const useVisualization = (uploadedImage) => {
     });
   };
 
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer) return undefined;
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const step = e.deltaY < 0 ? 1.1 : 0.9;
+      zoomToPoint(zoom * step, e.clientX, e.clientY);
+    };
+
+    const handleDoubleClick = (e) => {
+      e.preventDefault();
+      zoomToPoint(zoom * 1.35, e.clientX, e.clientY);
+    };
+
+    const handleMouseDown = (e) => {
+      if (e.button !== 0) return;
+      isDraggingRef.current = true;
+      viewer.classList.add('is-dragging');
+      dragStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        scrollLeft: viewer.scrollLeft,
+        scrollTop: viewer.scrollTop,
+      };
+      e.preventDefault();
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isDraggingRef.current) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      viewer.scrollLeft = dragStartRef.current.scrollLeft - dx;
+      viewer.scrollTop = dragStartRef.current.scrollTop - dy;
+    };
+
+    const stopDragging = () => {
+      isDraggingRef.current = false;
+      viewer.classList.remove('is-dragging');
+    };
+
+    viewer.addEventListener('wheel', handleWheel, { passive: false });
+    viewer.addEventListener('dblclick', handleDoubleClick);
+    viewer.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', stopDragging);
+    viewer.addEventListener('mouseleave', stopDragging);
+
+    return () => {
+      viewer.removeEventListener('wheel', handleWheel);
+      viewer.removeEventListener('dblclick', handleDoubleClick);
+      viewer.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', stopDragging);
+      viewer.removeEventListener('mouseleave', stopDragging);
+    };
+  }, [zoom, zoomToPoint]);
+
   return {
     zoom,
     showAnnotationText,
@@ -185,6 +270,7 @@ export const useVisualization = (uploadedImage) => {
     zoomIn,
     zoomOut,
     resetZoom,
+    zoomToPoint,
     getZoomPercentage,
     visualizeJson,
     updateView,

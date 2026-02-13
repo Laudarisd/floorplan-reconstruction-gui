@@ -2,6 +2,10 @@
   display: block;
   flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+  overflow: hidden;
   background: white;
   border-radius: 12px;
   padding: 25px;
@@ -12,10 +16,11 @@
   display: block;
 }
 
-.viz-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.viz-workspace {
+  display: grid;
+  grid-template-columns: minmax(110px, 130px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
@@ -30,17 +35,55 @@
   font-weight: 600;
 }
 
+.viz-actions-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 130px;
+  flex: 0 0 130px;
+}
+
+.viz-action-btn {
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  width: auto;
+  min-width: 92px;
+  max-width: 100px;
+  white-space: nowrap;
+}
+
 .zoom-label {
-  margin-left: 10px;
+  margin-top: 4px;
   font-weight: bold;
-  align-self: center;
+  font-size: 12px;
+  text-align: center;
+  width: 100%;
+}
+
+.viz-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.viz-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .annotation-controls {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .annotation-controls label {
@@ -50,24 +93,30 @@
   padding: 5px 10px;
   border-radius: 6px;
   border: 1px solid #ddd;
+  width: max-content;
 }
 
 .dimension-controls {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #ddd;
-  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .dimension-title {
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  margin-right: 4px;
 }
 
 .viewer-panel {
-  width: 1000px;
+  width: 100%;
   height: 800px;
-  max-width: 100%;
   overflow: scroll !important;
   overflow-x: scroll !important;
   overflow-y: scroll !important;
@@ -79,9 +128,13 @@
   background: #f5f5f5;
   border: 2px solid #ddd;
   border-radius: 8px;
-  margin: 0 auto;
+  margin: 0;
   scrollbar-color: #888 #f1f1f1;
   scrollbar-width: auto;
+}
+
+.viewer-panel.is-dragging {
+  cursor: grabbing;
 }
 
 .viewer-panel::-webkit-scrollbar {
@@ -122,6 +175,20 @@
   pointer-events: none;
 }
 
+.viz-empty-state {
+  width: 100%;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 2px dashed #cfd6cc;
+  border-radius: 8px;
+  background: #f8faf7;
+  color: #5f6b55;
+  font-weight: 600;
+}
+
 .viz-grid {
   margin-top: 30px;
   display: grid;
@@ -146,6 +213,22 @@
 }
 
 @media (max-width: 1024px) {
+  .viz-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .viz-actions-sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .zoom-label {
+    grid-column: 1 / -1;
+  }
+
   .viz-grid {
     grid-template-columns: repeat(3, 1fr);
   }

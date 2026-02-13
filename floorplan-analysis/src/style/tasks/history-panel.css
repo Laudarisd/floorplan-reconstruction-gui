@@ -1,6 +1,7 @@
 .history-panel {
-  width: 240px;
-  flex: 0 0 240px;
+  width: 100%;
+  max-width: 220px;
+  flex: 0 0 auto;
   background: white;
   border-radius: 12px;
   padding: 16px;
@@ -8,6 +9,8 @@
   position: sticky;
   top: 20px;
   align-self: stretch;
+  justify-self: end;
+  margin-left: auto;
   max-height: 100%;
   overflow: auto;
 }
