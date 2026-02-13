@@ -29,7 +29,8 @@ export const useVisualization = (uploadedImage) => {
   const zoomRef = useRef(1);
   const targetZoomRef = useRef(1);
   const wheelZoomRafRef = useRef(null);
-  const wheelAnchorRef = useRef({ x: 0, y: 0 });
+  const wheelAnchorRef = useRef(null);
+  const wheelEndTimerRef = useRef(null);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
@@ -170,9 +171,9 @@ export const useVisualization = (uploadedImage) => {
     setZoom(fitZoom);
   };
 
-  const applyZoomAtPoint = useCallback((fromZoom, toZoom, clientX, clientY) => {
+  const createZoomAnchor = useCallback((clientX, clientY, fromZoom) => {
     const viewer = viewerRef.current;
-    if (!viewer || !originalWidth || !originalHeight) return;
+    if (!viewer || !originalWidth || !originalHeight) return null;
 
     const rect = viewer.getBoundingClientRect();
     const mouseX = clientX - rect.left;
@@ -185,12 +186,19 @@ export const useVisualization = (uploadedImage) => {
     const fx = contentX / oldScaledW;
     const fy = contentY / oldScaledH;
 
+    return { mouseX, mouseY, fx, fy };
+  }, [originalWidth, originalHeight]);
+
+  const applyZoomWithAnchor = useCallback((toZoom, anchor) => {
+    const viewer = viewerRef.current;
+    if (!viewer || !originalWidth || !originalHeight || !anchor) return;
+
     zoomRef.current = toZoom;
     setZoom(toZoom);
 
     requestAnimationFrame(() => {
-      viewer.scrollLeft = fx * (originalWidth * toZoom) - mouseX;
-      viewer.scrollTop = fy * (originalHeight * toZoom) - mouseY;
+      viewer.scrollLeft = anchor.fx * (originalWidth * toZoom) - anchor.mouseX;
+      viewer.scrollTop = anchor.fy * (originalHeight * toZoom) - anchor.mouseY;
     });
   }, [originalWidth, originalHeight]);
 
@@ -200,10 +208,12 @@ export const useVisualization = (uploadedImage) => {
     const clampedZoom = Math.max(minZoomRef.current, Math.min(nextZoom, 5));
     const fromZoom = zoomRef.current;
     if (Math.abs(clampedZoom - fromZoom) < 1e-6) return;
+    const anchor = createZoomAnchor(clientX, clientY, fromZoom);
+    if (!anchor) return;
 
     targetZoomRef.current = clampedZoom;
-    applyZoomAtPoint(fromZoom, clampedZoom, clientX, clientY);
-  }, [applyZoomAtPoint, originalWidth, originalHeight]);
+    applyZoomWithAnchor(clampedZoom, anchor);
+  }, [applyZoomWithAnchor, createZoomAnchor, originalWidth, originalHeight]);
   
   const getZoomPercentage = () => {
     if (minZoomRef.current === 0) return 100;
@@ -238,6 +248,13 @@ export const useVisualization = (uploadedImage) => {
       }
     };
 
+    const clearWheelEndTimer = () => {
+      if (wheelEndTimerRef.current) {
+        clearTimeout(wheelEndTimerRef.current);
+        wheelEndTimerRef.current = null;
+      }
+    };
+
     const normalizeWheelDelta = (e) => {
       // Normalize mouse-wheel/trackpad values across devices and browsers.
       const LINE_HEIGHT_PX = 16;
@@ -251,35 +268,52 @@ export const useVisualization = (uploadedImage) => {
       const current = zoomRef.current;
       const target = targetZoomRef.current;
       const diff = target - current;
+      const anchor = wheelAnchorRef.current;
+      if (!anchor) {
+        wheelZoomRafRef.current = null;
+        return;
+      }
 
       if (Math.abs(diff) < 0.0008) {
         if (Math.abs(target - current) > 1e-8) {
-          applyZoomAtPoint(current, target, wheelAnchorRef.current.x, wheelAnchorRef.current.y);
+          applyZoomWithAnchor(target, anchor);
         }
         wheelZoomRafRef.current = null;
         return;
       }
 
-      const nextZoom = current + diff * 0.16;
-      applyZoomAtPoint(current, nextZoom, wheelAnchorRef.current.x, wheelAnchorRef.current.y);
+      const nextZoom = current + diff * 0.1;
+      applyZoomWithAnchor(nextZoom, anchor);
       wheelZoomRafRef.current = requestAnimationFrame(animateWheelZoom);
     };
 
     const handleWheel = (e) => {
       e.preventDefault();
 
-      const normalizedDelta = clamp(normalizeWheelDelta(e), -60, 60);
+      const normalizedDelta = clamp(normalizeWheelDelta(e), -50, 50);
       // Lower sensitivity + normalized input makes zoom smoother and less jumpy.
-      const wheelFactor = Math.exp(-normalizedDelta * 0.0009);
+      const wheelFactor = Math.exp(-normalizedDelta * 0.00075);
       const baseZoom = targetZoomRef.current || zoomRef.current;
       const nextZoom = Math.max(minZoomRef.current, Math.min(baseZoom * wheelFactor, 5));
+      const isAnimating = !!wheelZoomRafRef.current;
 
       targetZoomRef.current = nextZoom;
-      wheelAnchorRef.current = { x: e.clientX, y: e.clientY };
+      // Keep one fixed anchor during a wheel gesture to prevent shaking.
+      if (!isAnimating || !wheelAnchorRef.current) {
+        const anchor = createZoomAnchor(e.clientX, e.clientY, zoomRef.current);
+        if (!anchor) return;
+        wheelAnchorRef.current = anchor;
+      }
 
       if (!wheelZoomRafRef.current) {
         wheelZoomRafRef.current = requestAnimationFrame(animateWheelZoom);
       }
+
+      clearWheelEndTimer();
+      wheelEndTimerRef.current = setTimeout(() => {
+        wheelAnchorRef.current = null;
+        wheelEndTimerRef.current = null;
+      }, 120);
     };
 
     const handleDoubleClick = (e) => {
@@ -322,6 +356,7 @@ export const useVisualization = (uploadedImage) => {
 
     return () => {
       stopWheelAnimation();
+      clearWheelEndTimer();
       viewer.removeEventListener('wheel', handleWheel);
       viewer.removeEventListener('dblclick', handleDoubleClick);
       viewer.removeEventListener('mousedown', handleMouseDown);
@@ -329,7 +364,7 @@ export const useVisualization = (uploadedImage) => {
       document.removeEventListener('mouseup', stopDragging);
       viewer.removeEventListener('mouseleave', stopDragging);
     };
-  }, [applyZoomAtPoint, zoomToPoint]);
+  }, [applyZoomWithAnchor, createZoomAnchor, zoomToPoint]);
 
   return {
     zoom,
