@@ -4,10 +4,11 @@ import GifPlaceholder from '../shared/GifPlaceholder';
 import '../../style/tasks/visualization.css';
 
 const VIZ_COPY = {
+  title: 'Visualization Panel',
   loadingCaption: 'Preparing visualization...',
   empty: 'Upload an image to see visualization',
-  showText: 'Show Annotation Text',
-  hideText: 'Hide Annotation Text',
+  showText: 'Show Text',
+  hideText: 'Hide Text',
   showPoints: 'Show Key Points',
   hidePoints: 'Hide Key Points',
   zoomIn: 'Zoom In',
@@ -132,54 +133,29 @@ const VisualizationPanel = ({
   const renderContent = () => {
     return (
       <div id="vizContent" className={VIZ_CLASSNAMES.content}>
-        <div className="viz-workspace">
-          <div className="viz-actions-sidebar">
-            <button
-              onClick={() => viz.setShowAnnotationText(!viz.showAnnotationText)}
-              className="btn viz-action-btn"
-              disabled={!uploadedImage}
-            >
-              {viz.showAnnotationText ? VIZ_COPY.hideText : VIZ_COPY.showText}
-            </button>
-            <button
-              onClick={() => viz.setShowKeyPoints(!viz.showKeyPoints)}
-              className="btn viz-action-btn"
-              disabled={!uploadedImage}
-            >
-              {viz.showKeyPoints ? VIZ_COPY.hidePoints : VIZ_COPY.showPoints}
-            </button>
-            <button onClick={viz.zoomIn} className="btn viz-action-btn" disabled={!uploadedImage}>
-              {VIZ_COPY.zoomIn}
-            </button>
-            <button onClick={viz.zoomOut} className="btn viz-action-btn" disabled={!uploadedImage}>
-              {VIZ_COPY.zoomOut}
-            </button>
-            <button onClick={viz.resetZoom} className="btn viz-action-btn" disabled={!uploadedImage}>
-              {VIZ_COPY.reset}
-            </button>
-            <span className="zoom-label">Zoom: {viz.getZoomPercentage()}%</span>
-          </div>
+        <div className="viz-main">
+          {!loading && renderClassControls()}
 
-          <div className="viz-main">
-            {renderClassControls()}
-
-            {!uploadedImage ? (
-              <div className="viz-empty-state">{VIZ_COPY.empty}</div>
-            ) : (
-              <div id="viewer" ref={viz.viewerRef} className={VIZ_CLASSNAMES.viewer}>
-                <div id="zoomContainer" className={VIZ_CLASSNAMES.zoomContainer}>
-                  <img
-                    id="mainImage"
-                    src={uploadedImage}
-                    alt="Floorplan"
-                    className="main-image"
-                    onLoad={() => viz.handleImageLoad()}
-                  />
-                  <canvas id="mainCanvas" ref={viz.canvasRef} className="main-canvas" />
-                </div>
+          {loading ? (
+            <div id="vizGif" className="gif-placeholder viz-loading-state">
+              <GifPlaceholder gifSrc="/assets/Loader cat.gif" caption={VIZ_COPY.loadingCaption} />
+            </div>
+          ) : !uploadedImage ? (
+            <div className="viz-empty-state">{VIZ_COPY.empty}</div>
+          ) : (
+            <div id="viewer" ref={viz.viewerRef} className={VIZ_CLASSNAMES.viewer}>
+              <div id="zoomContainer" className={VIZ_CLASSNAMES.zoomContainer}>
+                <img
+                  id="mainImage"
+                  src={uploadedImage}
+                  alt="Floorplan"
+                  className="main-image"
+                  onLoad={() => viz.handleImageLoad()}
+                />
+                <canvas id="mainCanvas" ref={viz.canvasRef} className="main-canvas" />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="viz-grid">
@@ -196,15 +172,42 @@ const VisualizationPanel = ({
     );
   };
 
+  const renderActionSidebar = () => {
+    return (
+      <aside className="viz-actions-sidebar">
+        <button
+          onClick={() => viz.setShowAnnotationText(!viz.showAnnotationText)}
+          className="btn viz-action-btn"
+        >
+          {viz.showAnnotationText ? VIZ_COPY.hideText : VIZ_COPY.showText}
+        </button>
+        <button
+          onClick={() => viz.setShowKeyPoints(!viz.showKeyPoints)}
+          className="btn viz-action-btn"
+        >
+          {viz.showKeyPoints ? VIZ_COPY.hidePoints : VIZ_COPY.showPoints}
+        </button>
+        <button onClick={viz.zoomIn} className="btn viz-action-btn">
+          {VIZ_COPY.zoomIn}
+        </button>
+        <button onClick={viz.zoomOut} className="btn viz-action-btn">
+          {VIZ_COPY.zoomOut}
+        </button>
+        <button onClick={viz.resetZoom} className="btn viz-action-btn">
+          {VIZ_COPY.reset}
+        </button>
+        <span className="zoom-label">Zoom: {viz.getZoomPercentage()}%</span>
+      </aside>
+    );
+  };
+
   return (
-    <div className={VIZ_CLASSNAMES.section} id="visualizationSection">
-      {loading ? (
-        <div id="vizGif" className="gif-placeholder">
-          <GifPlaceholder gifSrc="/assets/Loader cat.gif" caption={VIZ_COPY.loadingCaption} />
-        </div>
-      ) : (
-        renderContent()
-      )}
+    <div className="visualization-panel-wrap">
+      <h3 className="viz-section-title">{VIZ_COPY.title}</h3>
+      <div className="viz-shell">
+        {renderActionSidebar()}
+        <div className={VIZ_CLASSNAMES.section} id="visualizationSection">{renderContent()}</div>
+      </div>
     </div>
   );
 };

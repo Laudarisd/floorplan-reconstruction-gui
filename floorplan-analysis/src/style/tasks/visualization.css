@@ -1,3 +1,20 @@
+.visualization-panel-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+.viz-shell {
+  display: grid;
+  grid-template-columns: minmax(100px, 118px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.viz-section-title {
+  margin: 0 0 8px 2px;
+  color: #4f5f43;
+}
+
 .visualization-section {
   display: block;
   flex: 1 1 auto;
@@ -14,14 +31,6 @@
 
 .gif-content {
   display: block;
-}
-
-.viz-workspace {
-  display: grid;
-  grid-template-columns: minmax(110px, 130px) minmax(0, 1fr);
-  align-items: stretch;
-  gap: 12px;
-  margin-bottom: 20px;
 }
 
 .btn {
@@ -41,8 +50,12 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-  width: 130px;
-  flex: 0 0 130px;
+  width: 100%;
+  min-height: 180px;
+  padding: 12px 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
 .viz-action-btn {
@@ -63,17 +76,13 @@
   width: 100%;
 }
 
-.viz-action-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .viz-main {
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  margin-bottom: 20px;
 }
 
 .annotation-controls {
@@ -189,6 +198,10 @@
   font-weight: 600;
 }
 
+.viz-loading-state {
+  min-height: 260px;
+}
+
 .viz-grid {
   margin-top: 30px;
   display: grid;
@@ -213,16 +226,16 @@
 }
 
 @media (max-width: 1024px) {
-  .viz-workspace {
+  .viz-shell {
     grid-template-columns: 1fr;
   }
 
   .viz-actions-sidebar {
     width: 100%;
-    flex: 0 0 auto;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    min-height: 0;
   }
 
   .zoom-label {
