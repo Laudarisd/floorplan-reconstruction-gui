@@ -1,13 +1,13 @@
-// Codex Note: components/zip/ZipContentsPanel.jsx - Main logic for this module/task.
+ï»¿// Codex Note: components/zip/ZipContentsPanel.jsx - Main logic for this module/task.
 import React, { useEffect, useState } from 'react';
 import GifPlaceholder from '../shared/GifPlaceholder';
 import { useZipExtraction } from '../../hooks/useZipExtraction';
 import '../../style/tasks/zip-contents.css';
 
 const ZIP_COPY = {
-  title: '?“¦ ZIP Contents',
+  title: 'ZIP Contents',
   processingCaption: 'Processing your floorplan data...',
-  scaleLabel: '?“ Scale Info:',
+  scaleLabel: 'Scale Info:',
   empty: 'No files found in ZIP',
 };
 
@@ -118,9 +118,9 @@ const ZipContentsPanel = ({
   };
 
   const getFileIcon = (fileName) => {
-    if (fileName.endsWith('.json')) return '?“„';
-    if (fileName.match(/\.(png|jpg|jpeg)$/)) return '?–¼ï¸?;
-    return '?“Ž';
+    if (fileName.endsWith('.json')) return '[JSON]';
+    if (fileName.match(/\.(png|jpg|jpeg)$/)) return '[IMG]';
+    return '[TXT]';
   };
 
   const sortFiles = (fileList) => {
@@ -156,9 +156,9 @@ const ZipContentsPanel = ({
             <div id="scaleInfo" className={ZIP_CLASSNAMES.scaleInfo}>
               <strong>{ZIP_COPY.scaleLabel}</strong>
               <br />
-              Original: {scaleInfo.originalWidth}Ã—{scaleInfo.originalHeight}px
+              Original: {scaleInfo.originalWidth} x {scaleInfo.originalHeight}px
               <br />
-              Crop: {scaleInfo.cropWidth}Ã—{scaleInfo.cropHeight}px
+              Crop: {scaleInfo.cropWidth} x {scaleInfo.cropHeight}px
               <br />
               Offset: ({scaleInfo.cropXMin}, {scaleInfo.cropYMin})px
             </div>

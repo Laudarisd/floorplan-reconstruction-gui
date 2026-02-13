@@ -1,10 +1,10 @@
-// Codex Note: components/upload/FileUploadPanel.jsx - Main logic for this module/task.
+Ôªø// Codex Note: components/upload/FileUploadPanel.jsx - Main logic for this module/task.
 import React, { useState } from 'react';
 import { useFileUpload } from '../../hooks/useFileUpload';
 import '../../style/tasks/file-upload.css';
 
 const UPLOAD_COPY = {
-  title: '?ì§ Upload Floorplan',
+  title: 'Upload Floorplan',
   userIdLabel: 'User ID:',
   projectLabel: 'Project Number:',
   floorLabel: 'Floor Number:',
@@ -12,7 +12,7 @@ const UPLOAD_COPY = {
   userIdPlaceholder: 'e.g., sd_test',
   projectPlaceholder: 'e.g., PRJ-1',
   floorPlaceholder: 'e.g., floor_1',
-  sendLabel: '?? Send to Server',
+  sendLabel: 'Send to Server',
 };
 
 const UPLOAD_CLASSNAMES = {
@@ -51,7 +51,7 @@ const FileUploadPanel = ({ serverConfig, onZipReceived, setLoading }) => {
 
     if (serverConfig.ip === '127.0.0.1' || serverConfig.ip === 'localhost') {
       alert(
-        '?†Ô∏è Please set the correct server IP address in Settings.\n127.0.0.1 is only a placeholder example.'
+        'Please set the correct server IP address in Settings.\n127.0.0.1 is only a placeholder example.'
       );
       return;
     }

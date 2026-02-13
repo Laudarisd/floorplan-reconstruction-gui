@@ -1,4 +1,4 @@
-/* Codex Note: style/vector.css - Styles for this module/task. */
+﻿/* Codex Note: style/vector.css - Styles for this module/task. */
 /* ============================================================================
  * vector.css - CAD-style Vectorization Styling
  * ============================================================================ */
@@ -18,7 +18,7 @@
   margin-bottom: 20px;
 }
 
-/* Vector canvas container - fixed 1000×800px like visualization */
+/* Vector canvas container - fixed 1000x800px like visualization */
 #vectorContainer {
   width: 1000px;
   height: 800px;
@@ -152,3 +152,5 @@
     width: 100%;
   }
 }
+
+

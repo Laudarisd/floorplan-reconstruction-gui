@@ -32,6 +32,8 @@ body {
   grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
   gap: 24px;
   align-items: start;
+  border-top: 1px solid #d7ddd4;
+  padding-top: 20px;
   margin-bottom: 30px;
 }
 
