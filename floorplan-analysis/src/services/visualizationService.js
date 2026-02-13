@@ -326,9 +326,9 @@ export const drawAnnotations = (
 
   const z = zoom;
   const BORDER_WIDTH = 3 * z;
-  const LABEL_HEIGHT = 20 * z;  // Reduced from 28 to 20
-  const LABEL_PADDING = 6 * z;  // Reduced from 8 to 6
-  const FONT_SIZE = 12 * z;     // Reduced from 18 to 12
+  const LABEL_HEIGHT = 24 * z;
+  const LABEL_PADDING = 8 * z;
+  const FONT_SIZE = 14 * z;
 
   let drawnCount = 0;
   const placedLabels = [];

@@ -229,12 +229,22 @@ export const useVisualization = (uploadedImage) => {
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) return undefined;
+    const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
 
     const stopWheelAnimation = () => {
       if (wheelZoomRafRef.current) {
         cancelAnimationFrame(wheelZoomRafRef.current);
         wheelZoomRafRef.current = null;
       }
+    };
+
+    const normalizeWheelDelta = (e) => {
+      // Normalize mouse-wheel/trackpad values across devices and browsers.
+      const LINE_HEIGHT_PX = 16;
+      const PAGE_HEIGHT_PX = viewer.clientHeight || 800;
+      if (e.deltaMode === 1) return e.deltaY * LINE_HEIGHT_PX;
+      if (e.deltaMode === 2) return e.deltaY * PAGE_HEIGHT_PX;
+      return e.deltaY;
     };
 
     const animateWheelZoom = () => {
@@ -250,7 +260,7 @@ export const useVisualization = (uploadedImage) => {
         return;
       }
 
-      const nextZoom = current + diff * 0.22;
+      const nextZoom = current + diff * 0.16;
       applyZoomAtPoint(current, nextZoom, wheelAnchorRef.current.x, wheelAnchorRef.current.y);
       wheelZoomRafRef.current = requestAnimationFrame(animateWheelZoom);
     };
@@ -258,8 +268,9 @@ export const useVisualization = (uploadedImage) => {
     const handleWheel = (e) => {
       e.preventDefault();
 
-      // Smooth trackpad/mouse-wheel scaling using continuous exponential factor.
-      const wheelFactor = Math.exp(-e.deltaY * 0.0015);
+      const normalizedDelta = clamp(normalizeWheelDelta(e), -60, 60);
+      // Lower sensitivity + normalized input makes zoom smoother and less jumpy.
+      const wheelFactor = Math.exp(-normalizedDelta * 0.0009);
       const baseZoom = targetZoomRef.current || zoomRef.current;
       const nextZoom = Math.max(minZoomRef.current, Math.min(baseZoom * wheelFactor, 5));
 
