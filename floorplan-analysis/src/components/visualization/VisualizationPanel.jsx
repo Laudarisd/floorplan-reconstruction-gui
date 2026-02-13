@@ -1,3 +1,4 @@
+// Codex Note: components/visualization/VisualizationPanel.jsx - Main logic for this module/task.
 import React, { useEffect, useCallback } from 'react';
 import { useVisualization } from '../../hooks/useVisualization';
 import GifPlaceholder from '../shared/GifPlaceholder';

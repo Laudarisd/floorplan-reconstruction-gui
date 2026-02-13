@@ -1,3 +1,4 @@
+// Codex Note: components/shared/GifPlaceholder.jsx - Main logic for this module/task.
 import React from 'react';
 import '../../style/tasks/gif-placeholder.css';
 

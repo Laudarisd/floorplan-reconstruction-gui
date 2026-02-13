@@ -1,3 +1,4 @@
+// Codex Note: hooks/useVisualization.js - Main logic for this module/task.
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   createRoiTransform,
@@ -25,6 +26,10 @@ export const useVisualization = (uploadedImage) => {
   const canvasRef = useRef(null);
   const viewerRef = useRef(null);
   const minZoomRef = useRef(1); // Store the fit-to-screen zoom level
+  const zoomRef = useRef(1);
+  const targetZoomRef = useRef(1);
+  const wheelZoomRafRef = useRef(null);
+  const wheelAnchorRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
@@ -46,6 +51,8 @@ export const useVisualization = (uploadedImage) => {
             viewerRef.current.clientHeight / image.naturalHeight
           );
           minZoomRef.current = minZoom; // Store the fit-to-screen zoom
+          zoomRef.current = minZoom;
+          targetZoomRef.current = minZoom;
           setZoom(minZoom); // Always start at fit-to-screen zoom
         }
       }, 100); // Increased delay to ensure DOM is fully ready
@@ -156,14 +163,16 @@ export const useVisualization = (uploadedImage) => {
 
   const zoomIn = () => setZoom(prev => Math.min(prev * 1.1, 5));
   const zoomOut = () => setZoom(prev => Math.max(prev * 0.9, minZoomRef.current));
-  const resetZoom = () => setZoom(minZoomRef.current);
+  const resetZoom = () => {
+    const fitZoom = minZoomRef.current;
+    zoomRef.current = fitZoom;
+    targetZoomRef.current = fitZoom;
+    setZoom(fitZoom);
+  };
 
-  const zoomToPoint = useCallback((nextZoom, clientX, clientY) => {
+  const applyZoomAtPoint = useCallback((fromZoom, toZoom, clientX, clientY) => {
     const viewer = viewerRef.current;
     if (!viewer || !originalWidth || !originalHeight) return;
-
-    const clampedZoom = Math.max(minZoomRef.current, Math.min(nextZoom, 5));
-    if (Math.abs(clampedZoom - zoom) < 1e-6) return;
 
     const rect = viewer.getBoundingClientRect();
     const mouseX = clientX - rect.left;
@@ -171,17 +180,30 @@ export const useVisualization = (uploadedImage) => {
     const contentX = viewer.scrollLeft + mouseX;
     const contentY = viewer.scrollTop + mouseY;
 
-    const oldScaledW = originalWidth * zoom || 1;
-    const oldScaledH = originalHeight * zoom || 1;
+    const oldScaledW = originalWidth * fromZoom || 1;
+    const oldScaledH = originalHeight * fromZoom || 1;
     const fx = contentX / oldScaledW;
     const fy = contentY / oldScaledH;
 
-    setZoom(clampedZoom);
+    zoomRef.current = toZoom;
+    setZoom(toZoom);
+
     requestAnimationFrame(() => {
-      viewer.scrollLeft = fx * (originalWidth * clampedZoom) - mouseX;
-      viewer.scrollTop = fy * (originalHeight * clampedZoom) - mouseY;
+      viewer.scrollLeft = fx * (originalWidth * toZoom) - mouseX;
+      viewer.scrollTop = fy * (originalHeight * toZoom) - mouseY;
     });
-  }, [zoom, originalWidth, originalHeight]);
+  }, [originalWidth, originalHeight]);
+
+  const zoomToPoint = useCallback((nextZoom, clientX, clientY) => {
+    if (!originalWidth || !originalHeight) return;
+
+    const clampedZoom = Math.max(minZoomRef.current, Math.min(nextZoom, 5));
+    const fromZoom = zoomRef.current;
+    if (Math.abs(clampedZoom - fromZoom) < 1e-6) return;
+
+    targetZoomRef.current = clampedZoom;
+    applyZoomAtPoint(fromZoom, clampedZoom, clientX, clientY);
+  }, [applyZoomAtPoint, originalWidth, originalHeight]);
   
   const getZoomPercentage = () => {
     if (minZoomRef.current === 0) return 100;
@@ -201,13 +223,52 @@ export const useVisualization = (uploadedImage) => {
   };
 
   useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) return undefined;
 
+    const stopWheelAnimation = () => {
+      if (wheelZoomRafRef.current) {
+        cancelAnimationFrame(wheelZoomRafRef.current);
+        wheelZoomRafRef.current = null;
+      }
+    };
+
+    const animateWheelZoom = () => {
+      const current = zoomRef.current;
+      const target = targetZoomRef.current;
+      const diff = target - current;
+
+      if (Math.abs(diff) < 0.0008) {
+        if (Math.abs(target - current) > 1e-8) {
+          applyZoomAtPoint(current, target, wheelAnchorRef.current.x, wheelAnchorRef.current.y);
+        }
+        wheelZoomRafRef.current = null;
+        return;
+      }
+
+      const nextZoom = current + diff * 0.22;
+      applyZoomAtPoint(current, nextZoom, wheelAnchorRef.current.x, wheelAnchorRef.current.y);
+      wheelZoomRafRef.current = requestAnimationFrame(animateWheelZoom);
+    };
+
     const handleWheel = (e) => {
       e.preventDefault();
-      const step = e.deltaY < 0 ? 1.1 : 0.9;
-      zoomToPoint(zoom * step, e.clientX, e.clientY);
+
+      // Smooth trackpad/mouse-wheel scaling using continuous exponential factor.
+      const wheelFactor = Math.exp(-e.deltaY * 0.0015);
+      const baseZoom = targetZoomRef.current || zoomRef.current;
+      const nextZoom = Math.max(minZoomRef.current, Math.min(baseZoom * wheelFactor, 5));
+
+      targetZoomRef.current = nextZoom;
+      wheelAnchorRef.current = { x: e.clientX, y: e.clientY };
+
+      if (!wheelZoomRafRef.current) {
+        wheelZoomRafRef.current = requestAnimationFrame(animateWheelZoom);
+      }
     };
 
     const handleDoubleClick = (e) => {
@@ -249,6 +310,7 @@ export const useVisualization = (uploadedImage) => {
     viewer.addEventListener('mouseleave', stopDragging);
 
     return () => {
+      stopWheelAnimation();
       viewer.removeEventListener('wheel', handleWheel);
       viewer.removeEventListener('dblclick', handleDoubleClick);
       viewer.removeEventListener('mousedown', handleMouseDown);
@@ -256,7 +318,7 @@ export const useVisualization = (uploadedImage) => {
       document.removeEventListener('mouseup', stopDragging);
       viewer.removeEventListener('mouseleave', stopDragging);
     };
-  }, [zoom, zoomToPoint]);
+  }, [applyZoomAtPoint, zoomToPoint]);
 
   return {
     zoom,

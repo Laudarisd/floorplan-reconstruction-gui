@@ -1,3 +1,4 @@
+// Codex Note: hooks/useFileUpload.js - Main logic for this module/task.
 import { useState } from 'react';
 import { uploadFile } from '../services/api';
 
@@ -32,13 +33,13 @@ export const useFileUpload = () => {
   // Upload image + metadata and return ZIP blob
   const upload = async (file, metadata, serverConfig) => {
     if (!file) {
-      setStatus({ message: '⚠️ Please select an image first.', type: 'error' });
+      setStatus({ message: '?�️ Please select an image first.', type: 'error' });
       return null;
     }
 
     setIsUploading(true);
     setProgress(10);
-    setStatus({ message: '📤 Uploading...', type: 'info' });
+    setStatus({ message: '?�� Uploading...', type: 'info' });
 
     try {
       const formData = new FormData();
@@ -50,7 +51,7 @@ export const useFileUpload = () => {
 
       const blob = await uploadFile(formData, serverConfig.ip, serverConfig.port, setProgress);
       setProgress(90);
-      setStatus({ message: `✅ ZIP received (${(blob.size / 1024).toFixed(1)} KB)`, type: 'success' });
+      setStatus({ message: `??ZIP received (${(blob.size / 1024).toFixed(1)} KB)`, type: 'success' });
       
       // Download ZIP file locally for user
       downloadZipFile(blob, `${metadata.userId}.zip`);
@@ -58,7 +59,7 @@ export const useFileUpload = () => {
       setProgress(100);
       return blob;
     } catch (err) {
-      setStatus({ message: `❌ Error: ${err.message}`, type: 'error' });
+      setStatus({ message: `??Error: ${err.message}`, type: 'error' });
       setProgress(0);
       return null;
     } finally {

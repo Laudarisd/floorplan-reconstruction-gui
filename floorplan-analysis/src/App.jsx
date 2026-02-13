@@ -1,3 +1,4 @@
+// Codex Note: App.jsx - Main logic for this module/task.
 import React, { useRef, useState } from 'react';
 import './App.css';
 import './style/base.css';

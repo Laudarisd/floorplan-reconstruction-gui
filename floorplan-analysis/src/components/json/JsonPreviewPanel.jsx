@@ -1,9 +1,10 @@
+// Codex Note: components/json/JsonPreviewPanel.jsx - Main logic for this module/task.
 import React from 'react';
 import GifPlaceholder from '../shared/GifPlaceholder';
 import '../../style/tasks/json-preview.css';
 
 const JSON_COPY = {
-  title: 'üîç Data Check',
+  title: '?îç Data Check',
   placeholder: 'Select a file from ZIP Contents to view',
   analyzingCaption: 'Analyzing data structure...',
 };

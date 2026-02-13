@@ -1,12 +1,13 @@
+// Codex Note: components/zip/ZipContentsPanel.jsx - Main logic for this module/task.
 import React, { useEffect, useState } from 'react';
 import GifPlaceholder from '../shared/GifPlaceholder';
 import { useZipExtraction } from '../../hooks/useZipExtraction';
 import '../../style/tasks/zip-contents.css';
 
 const ZIP_COPY = {
-  title: 'ðŸ“¦ ZIP Contents',
+  title: '?“¦ ZIP Contents',
   processingCaption: 'Processing your floorplan data...',
-  scaleLabel: 'ðŸ“ Scale Info:',
+  scaleLabel: '?“ Scale Info:',
   empty: 'No files found in ZIP',
 };
 
@@ -117,9 +118,9 @@ const ZipContentsPanel = ({
   };
 
   const getFileIcon = (fileName) => {
-    if (fileName.endsWith('.json')) return 'ðŸ“„';
-    if (fileName.match(/\.(png|jpg|jpeg)$/)) return 'ðŸ–¼ï¸';
-    return 'ðŸ“Ž';
+    if (fileName.endsWith('.json')) return '?“„';
+    if (fileName.match(/\.(png|jpg|jpeg)$/)) return '?–¼ï¸?;
+    return '?“Ž';
   };
 
   const sortFiles = (fileList) => {

@@ -1,3 +1,4 @@
+// Codex Note: reportWebVitals.js - Main logic for this module/task.
 // Legacy file kept for reference (new Vite entry uses src/main.jsx)
 const reportWebVitals = onPerfEntry => {
   if (onPerfEntry && onPerfEntry instanceof Function) {

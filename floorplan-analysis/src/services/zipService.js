@@ -1,3 +1,4 @@
+// Codex Note: services/zipService.js - Main logic for this module/task.
 import JSZip from "jszip";
 
 // Read ZIP contents into file list + JSZip instance

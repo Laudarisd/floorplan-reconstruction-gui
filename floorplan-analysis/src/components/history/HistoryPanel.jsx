@@ -1,3 +1,4 @@
+// Codex Note: components/history/HistoryPanel.jsx - Main logic for this module/task.
 import React from 'react';
 import '../../style/tasks/history-panel.css';
 

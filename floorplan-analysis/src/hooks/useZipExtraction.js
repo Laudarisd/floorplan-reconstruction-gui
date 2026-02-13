@@ -1,3 +1,4 @@
+// Codex Note: hooks/useZipExtraction.js - Main logic for this module/task.
 import { useState } from 'react';
 import { extractZipBlob, extractScaleInfo } from '../services/zipService';
 

@@ -1,3 +1,4 @@
+// Codex Note: services/api.js - Main logic for this module/task.
 // Server API service for image upload and data fetching
 // Upload image form data to backend
 export const uploadFile = async (formData, serverIp, serverPort, onProgress) => {

@@ -1,3 +1,4 @@
+// Codex Note: services/visualizationService.js - Main logic for this module/task.
 /**
  * Visualization Service - Core canvas rendering and annotation logic
  * Ported from app/src/image_mode/viz_render.js

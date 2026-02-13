@@ -1,3 +1,4 @@
+// Codex Note: index.js - Main logic for this module/task.
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

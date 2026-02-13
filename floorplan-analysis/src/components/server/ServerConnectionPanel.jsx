@@ -1,14 +1,15 @@
+// Codex Note: components/server/ServerConnectionPanel.jsx - Main logic for this module/task.
 import React, { useState } from 'react';
 import { testConnection } from '../../services/api';
 import '../../style/tasks/server-connection.css';
 
 const SERVER_PANEL_COPY = {
   title: 'IMAGE MODE',
-  settingsButton: '⚙️ Settings',
+  settingsButton: '?�️ Settings',
   modalTitle: 'Server Settings',
-  testLabel: '🔗 Test Connection',
-  testingLabel: '⏳ Testing...',
-  saveLabel: '💾 Save',
+  testLabel: '?�� Test Connection',
+  testingLabel: '??Testing...',
+  saveLabel: '?�� Save',
   ipLabel: 'Server IP:',
   portLabel: 'Port:',
 };
@@ -32,7 +33,7 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig }) => {
 
   const handleTestConnection = async () => {
     if (!tempConfig.ip || !tempConfig.port) {
-      setConnectionStatus('⚠️ Please enter both IP and port first.');
+      setConnectionStatus('?�️ Please enter both IP and port first.');
       return;
     }
 
@@ -42,9 +43,9 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig }) => {
     const isConnected = await testConnection(tempConfig.ip, tempConfig.port);
 
     if (isConnected) {
-      setConnectionStatus('✅ Connection successful!');
+      setConnectionStatus('??Connection successful!');
     } else {
-      setConnectionStatus(`❌ Cannot connect to http://${tempConfig.ip}:${tempConfig.port}`);
+      setConnectionStatus(`??Cannot connect to http://${tempConfig.ip}:${tempConfig.port}`);
     }
 
     setTestingConnection(false);
@@ -52,20 +53,20 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig }) => {
 
   const handleSave = () => {
     if (!tempConfig.ip || !tempConfig.port) {
-      alert('⚠️ Please enter both IP and port before saving.');
+      alert('?�️ Please enter both IP and port before saving.');
       return;
     }
 
     if (tempConfig.ip === '127.0.0.1' || tempConfig.ip === 'localhost') {
       const confirm = window.confirm(
-        '⚠️ Warning: You are using localhost (127.0.0.1).\nThis will only work if you have a server running on your local machine.\n\nDo you want to continue?'
+        '?�️ Warning: You are using localhost (127.0.0.1).\nThis will only work if you have a server running on your local machine.\n\nDo you want to continue?'
       );
       if (!confirm) return;
     }
 
     setServerConfig(tempConfig);
     setShowModal(false);
-    alert(`✅ Server URL set to: http://${tempConfig.ip}:${tempConfig.port}/receive_data`);
+    alert(`??Server URL set to: http://${tempConfig.ip}:${tempConfig.port}/receive_data`);
   };
 
   return (
@@ -118,7 +119,7 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig }) => {
             {connectionStatus && (
               <div
                 className={
-                  connectionStatus.includes('✅')
+                  connectionStatus.includes('??)
                     ? 'connection-status success'
                     : 'connection-status error'
                 }

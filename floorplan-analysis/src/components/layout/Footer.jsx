@@ -1,3 +1,4 @@
+// Codex Note: components/layout/Footer.jsx - Main logic for this module/task.
 import React from 'react';
 import '../../style/tasks/footer.css';
 
