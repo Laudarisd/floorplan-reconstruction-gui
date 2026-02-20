@@ -15,6 +15,16 @@
   letter-spacing: 1px;
 }
 
+.mode-select {
+  margin-left: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #A1C084;
+  color: white;
+  font-weight: 600;
+}
+
 .menu-subtitle {
   margin-left: 20px;
   font-size: 13px;

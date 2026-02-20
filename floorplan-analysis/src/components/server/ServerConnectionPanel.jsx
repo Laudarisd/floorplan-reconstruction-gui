@@ -1,10 +1,12 @@
 ﻿// Codex Note: components/server/ServerConnectionPanel.jsx - Main logic for this module/task.
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { testConnection } from '../../services/api.jsx';
 import '../../style/tasks/server-connection.css';
 
 const SERVER_PANEL_COPY = {
-  title: 'IMAGE MODE',
+  title: 'Mode',
+  imageModeLabel: 'IMAGE MODE',
+  dwgModeLabel: 'DWG MODE',
   settingsButton: 'Settings',
   modalTitle: 'Server Settings',
   testLabel: 'Test Connection',
@@ -24,12 +26,29 @@ const SERVER_CLASSNAMES = {
   btn: 'btn',
 };
 
-const ServerConnectionPanel = ({ serverConfig, setServerConfig }) => {
+const ServerConnectionPanel = ({ serverConfig, setServerConfig, selectedMode, setSelectedMode }) => {
   // Connection settings modal + test action
   const [showModal, setShowModal] = useState(false);
   const [tempConfig, setTempConfig] = useState(serverConfig);
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('');
+
+  useEffect(() => {
+    setTempConfig(serverConfig);
+  }, [serverConfig]);
+
+  const handleModeChange = (e) => {
+    const nextMode = e.target.value;
+    setSelectedMode(nextMode);
+
+    // Force fresh server entry on every mode switch.
+    const emptyConfig = { ip: '', port: '' };
+    setServerConfig(emptyConfig);
+    setTempConfig(emptyConfig);
+    setConnectionStatus('');
+    setShowModal(true);
+    alert('Mode changed. Please set Server IP and Port before continuing.');
+  };
 
   const handleTestConnection = async () => {
     if (!tempConfig.ip || !tempConfig.port) {
@@ -73,6 +92,10 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig }) => {
     <>
       <div className={SERVER_CLASSNAMES.menuBar}>
         <span className={SERVER_CLASSNAMES.menuTitle}>{SERVER_PANEL_COPY.title}</span>
+        <select className="mode-select" value={selectedMode} onChange={handleModeChange}>
+          <option value="image">{SERVER_PANEL_COPY.imageModeLabel}</option>
+          <option value="dwg">{SERVER_PANEL_COPY.dwgModeLabel}</option>
+        </select>
         <span className="menu-subtitle">Server: {serverConfig.ip}:{serverConfig.port}</span>
         <button onClick={() => setShowModal(true)} className={SERVER_CLASSNAMES.menuBtn}>
           {SERVER_PANEL_COPY.settingsButton}

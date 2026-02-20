@@ -10,13 +10,15 @@ import ZipContentsPanel from './image_mode/components/zip/ZipContentsPanel';
 import JsonPreviewPanel from './image_mode/components/json/JsonPreviewPanel';
 import VisualizationPanel from './image_mode/components/visualization/VisualizationPanel';
 import HistoryPanel from './image_mode/components/history/HistoryPanel';
+import DwgVisualizationPanel from './dwg_mode/components/DwgVisualizationPanel';
 
 function App() {
   // App-level UI state (server config, current selection, and history)
   const [serverConfig, setServerConfig] = useState({
-    ip: '127.0.0.1',
-    port: '8000',
+    ip: '',
+    port: '',
   });
+  const [selectedMode, setSelectedMode] = useState('image');
   const [zipBlob, setZipBlob] = useState(null);
   const [zipData, setZipData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -95,7 +97,12 @@ function App() {
 
   return (
     <div className="App">
-      <ServerConnectionPanel serverConfig={serverConfig} setServerConfig={setServerConfig} />
+      <ServerConnectionPanel
+        serverConfig={serverConfig}
+        setServerConfig={setServerConfig}
+        selectedMode={selectedMode}
+        setSelectedMode={setSelectedMode}
+      />
       <Header />
 
       <div className="container">
@@ -117,13 +124,17 @@ function App() {
         </div>
 
         <div className="visualization-row">
-          <VisualizationPanel
-            zipData={zipData}
-            selectedFile={selectedFile}
-            uploadedImage={uploadedImage}
-            loading={loading.visualization}
-            setLoading={setLoading}
-          />
+          {selectedMode === 'dwg' ? (
+            <DwgVisualizationPanel />
+          ) : (
+            <VisualizationPanel
+              zipData={zipData}
+              selectedFile={selectedFile}
+              uploadedImage={uploadedImage}
+              loading={loading.visualization}
+              setLoading={setLoading}
+            />
+          )}
           <HistoryPanel
             entries={historyEntries}
             activeId={activeHistoryId}
