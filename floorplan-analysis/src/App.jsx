@@ -5,11 +5,11 @@ import './style/base.css';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import ServerConnectionPanel from './components/server/ServerConnectionPanel';
-import FileUploadPanel from './components/upload/FileUploadPanel';
-import ZipContentsPanel from './components/zip/ZipContentsPanel';
-import JsonPreviewPanel from './components/json/JsonPreviewPanel';
-import VisualizationPanel from './components/visualization/VisualizationPanel';
-import HistoryPanel from './components/history/HistoryPanel';
+import FileUploadPanel from './image_mode/components/upload/FileUploadPanel';
+import ZipContentsPanel from './image_mode/components/zip/ZipContentsPanel';
+import JsonPreviewPanel from './image_mode/components/json/JsonPreviewPanel';
+import VisualizationPanel from './image_mode/components/visualization/VisualizationPanel';
+import HistoryPanel from './image_mode/components/history/HistoryPanel';
 
 function App() {
   // App-level UI state (server config, current selection, and history)
