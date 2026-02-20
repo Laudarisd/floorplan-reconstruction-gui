@@ -1,6 +1,6 @@
 ﻿// Codex Note: components/server/ServerConnectionPanel.jsx - Main logic for this module/task.
 import React, { useState } from 'react';
-import { testConnection } from '../../services/api';
+import { testConnection } from '../../services/api.jsx';
 import '../../style/tasks/server-connection.css';
 
 const SERVER_PANEL_COPY = {

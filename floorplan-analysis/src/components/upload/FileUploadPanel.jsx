@@ -1,6 +1,6 @@
 ﻿// Codex Note: components/upload/FileUploadPanel.jsx - Main logic for this module/task.
 import React, { useState } from 'react';
-import { useFileUpload } from '../../hooks/useFileUpload';
+import { useFileUpload } from '../../hooks/useFileUpload.jsx';
 import '../../style/tasks/file-upload.css';
 
 const UPLOAD_COPY = {

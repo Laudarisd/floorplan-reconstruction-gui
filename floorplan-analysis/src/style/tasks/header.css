@@ -1,14 +1,43 @@
 /* Codex Note: style/tasks/header.css - Styles for this module/task. */
 .header-section {
-  background-size: cover;
-  background-position: center;
+  position: relative;
+  overflow: hidden;
   color: white;
   padding: 40px 20px;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
+.header-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  animation: header-slide-loop 28s linear infinite;
+}
+
+.header-slide {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@keyframes header-slide-loop {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .header-section h1 {
+  position: relative;
+  z-index: 1;
   font-size: 3em;
   font-weight: 700;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);

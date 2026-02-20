@@ -1,7 +1,7 @@
 ﻿// Codex Note: components/zip/ZipContentsPanel.jsx - Main logic for this module/task.
 import React, { useEffect, useState } from 'react';
 import GifPlaceholder from '../shared/GifPlaceholder';
-import { useZipExtraction } from '../../hooks/useZipExtraction';
+import { useZipExtraction } from '../../hooks/useZipExtraction.jsx';
 import '../../style/tasks/zip-contents.css';
 
 const ZIP_COPY = {
