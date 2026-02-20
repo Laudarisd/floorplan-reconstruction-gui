@@ -11,6 +11,7 @@ import JsonPreviewPanel from './image_mode/components/json/JsonPreviewPanel';
 import VisualizationPanel from './image_mode/components/visualization/VisualizationPanel';
 import HistoryPanel from './image_mode/components/history/HistoryPanel';
 import DwgVisualizationPanel from './dwg_mode/components/DwgVisualizationPanel';
+import DwgFileUploadPanel from './dwg_mode/components/upload/DwgFileUploadPanel';
 
 function App() {
   // App-level UI state (server config, current selection, and history)
@@ -32,6 +33,9 @@ function App() {
     dataCheck: true,
     visualization: true,
   });
+  const [dwgUploadData, setDwgUploadData] = useState(null);
+  const [dwgHistoryEntries, setDwgHistoryEntries] = useState([]);
+  const [activeDwgHistoryId, setActiveDwgHistoryId] = useState(null);
 
   // Handle upload completion (ZIP blob + preview image)
   const handleZipReceived = async (blob, imageDataUrl, imageName = '') => {
@@ -95,6 +99,32 @@ function App() {
     });
   };
 
+  // Persist DWG folder payload in memory (and history) for later processing.
+  const handleDwgDataReady = (payload) => {
+    if (!payload) return;
+
+    setDwgUploadData(payload);
+    const nextId = `${payload.folderName || 'dwg-folder'}-${Date.now()}`;
+    const entry = {
+      id: nextId,
+      imageName: payload.folderName || 'DWG Folder',
+      dwgData: payload,
+    };
+
+    setDwgHistoryEntries((prev) => {
+      const filtered = prev.filter((item) => item.id !== nextId);
+      return [entry, ...filtered];
+    });
+    setActiveDwgHistoryId(nextId);
+  };
+
+  // Restore a previously loaded DWG folder payload from in-memory history.
+  const handleDwgHistorySelect = (entry) => {
+    if (!entry?.dwgData) return;
+    setDwgUploadData(entry.dwgData);
+    setActiveDwgHistoryId(entry.id);
+  };
+
   return (
     <div className="App">
       <ServerConnectionPanel
@@ -107,11 +137,15 @@ function App() {
 
       <div className="container">
         <div className="three-columns">
-          <FileUploadPanel
-            serverConfig={serverConfig}
-            onZipReceived={handleZipReceived}
-            setLoading={setLoading}
-          />
+          {selectedMode === 'dwg' ? (
+            <DwgFileUploadPanel onDwgDataReady={handleDwgDataReady} />
+          ) : (
+            <FileUploadPanel
+              serverConfig={serverConfig}
+              onZipReceived={handleZipReceived}
+              setLoading={setLoading}
+            />
+          )}
           <ZipContentsPanel
             zipBlob={zipBlob}
             loading={loading.dataContent}
@@ -125,7 +159,7 @@ function App() {
 
         <div className="visualization-row">
           {selectedMode === 'dwg' ? (
-            <DwgVisualizationPanel />
+            <DwgVisualizationPanel dwgUploadData={dwgUploadData} />
           ) : (
             <VisualizationPanel
               zipData={zipData}
@@ -135,11 +169,19 @@ function App() {
               setLoading={setLoading}
             />
           )}
-          <HistoryPanel
-            entries={historyEntries}
-            activeId={activeHistoryId}
-            onSelect={handleHistorySelect}
-          />
+          {selectedMode === 'dwg' ? (
+            <HistoryPanel
+              entries={dwgHistoryEntries}
+              activeId={activeDwgHistoryId}
+              onSelect={handleDwgHistorySelect}
+            />
+          ) : (
+            <HistoryPanel
+              entries={historyEntries}
+              activeId={activeHistoryId}
+              onSelect={handleHistorySelect}
+            />
+          )}
         </div>
       </div>
 
