@@ -31,7 +31,7 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig, selectedMode, se
   const [showModal, setShowModal] = useState(false);
   const [tempConfig, setTempConfig] = useState(serverConfig);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('');
+  const [connectionStatus, setConnectionStatus] = useState({ message: '', type: '' });
 
   useEffect(() => {
     setTempConfig(serverConfig);
@@ -45,26 +45,26 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig, selectedMode, se
     const emptyConfig = { ip: '', port: '' };
     setServerConfig(emptyConfig);
     setTempConfig(emptyConfig);
-    setConnectionStatus('');
+    setConnectionStatus({ message: '', type: '' });
     setShowModal(true);
     alert('Mode changed. Please set Server IP and Port before continuing.');
   };
 
   const handleTestConnection = async () => {
     if (!tempConfig.ip || !tempConfig.port) {
-      setConnectionStatus('Please enter both IP and port first.');
+      setConnectionStatus({ message: 'Please enter both IP and port first.', type: 'error' });
       return;
     }
 
     setTestingConnection(true);
-    setConnectionStatus('Testing connection...');
+    setConnectionStatus({ message: 'Testing connection...', type: 'info' });
 
-    const isConnected = await testConnection(tempConfig.ip, tempConfig.port);
+    const result = await testConnection(tempConfig.ip, tempConfig.port);
 
-    if (isConnected) {
-      setConnectionStatus('Connection successful!');
+    if (result.ok) {
+      setConnectionStatus({ message: result.message, type: 'success' });
     } else {
-      setConnectionStatus(`Cannot connect to http://${tempConfig.ip}:${tempConfig.port}`);
+      setConnectionStatus({ message: result.message, type: 'error' });
     }
 
     setTestingConnection(false);
@@ -139,15 +139,17 @@ const ServerConnectionPanel = ({ serverConfig, setServerConfig, selectedMode, se
               </button>
             </div>
 
-            {connectionStatus && (
+            {connectionStatus.message && (
               <div
                 className={
-                  connectionStatus.toLowerCase().includes('successful')
+                  connectionStatus.type === 'success'
                     ? 'connection-status success'
+                    : connectionStatus.type === 'info'
+                    ? 'connection-status info'
                     : 'connection-status error'
                 }
               >
-                {connectionStatus}
+                {connectionStatus.message}
               </div>
             )}
           </div>

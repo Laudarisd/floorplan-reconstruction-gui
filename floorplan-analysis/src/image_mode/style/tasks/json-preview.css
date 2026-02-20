@@ -25,6 +25,18 @@
   overflow: auto;
 }
 
+/* DWG-only sizing: keep data check height stable during loading. */
+.dwg-data-check .gif-placeholder {
+  min-height: 550px;
+}
+
+/* DWG-only wrapping: prevent long strings from stretching panel width. */
+.dwg-data-check .data-json {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .data-title {
   color: #6B7A5A;
   margin-bottom: 10px;

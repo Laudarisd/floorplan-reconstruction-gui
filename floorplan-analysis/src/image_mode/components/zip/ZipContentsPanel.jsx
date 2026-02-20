@@ -30,9 +30,13 @@ const ZIP_CLASSNAMES = {
   scaleInfo: 'scale-info',
 };
 
+// Basic file-type helpers for ZIP entries.
 const isJsonFile = (fileName) => fileName.toLowerCase().endsWith('.json');
-const isCropJsonFile = (fileName) =>
-  isJsonFile(fileName) && fileName.toLowerCase().includes('crop');
+const isHjsonFile = (fileName) => fileName.toLowerCase().endsWith('.hjson');
+const isJsonLikeFile = (fileName, mode) =>
+  mode === 'dwg' ? isJsonFile(fileName) || isHjsonFile(fileName) : isJsonFile(fileName);
+const isCropJsonFile = (fileName, mode) =>
+  isJsonLikeFile(fileName, mode) && fileName.toLowerCase().includes('crop');
 
 const ZipContentsPanel = ({
   zipBlob,
@@ -41,13 +45,14 @@ const ZipContentsPanel = ({
   onFileSelected,
   setZipData,
   onZipDataReady,
+  mode = 'image',
 }) => {
   const [files, setFiles] = useState([]);
   const [scaleInfo, setScaleInfo] = useState(null);
   const [zip, setZip] = useState(null);
   const { extract } = useZipExtraction();
 
-  // Extract ZIP whenever a new blob arrives
+  // Extract ZIP whenever a new blob arrives.
   useEffect(() => {
     if (zipBlob) {
       extractZip();
@@ -55,7 +60,7 @@ const ZipContentsPanel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zipBlob]);
 
-  // Parse ZIP contents + scale info
+  // Parse ZIP contents + scale info.
   const extractZip = async () => {
     try {
       const result = await extract(zipBlob);
@@ -67,10 +72,11 @@ const ZipContentsPanel = ({
         onZipDataReady(result);
       }
 
+      // Apply priority ordering so crop/segment files appear first.
       const sortedFiles = sortFiles([...result.files]);
       const defaultJsonFile =
-        sortedFiles.find((name) => isCropJsonFile(name)) ||
-        sortedFiles.find((name) => isJsonFile(name));
+        sortedFiles.find((name) => isCropJsonFile(name, mode)) ||
+        sortedFiles.find((name) => isJsonLikeFile(name, mode));
 
       if (defaultJsonFile) {
         const defaultFileData = await readFileData(result.zip, defaultJsonFile);
@@ -84,13 +90,20 @@ const ZipContentsPanel = ({
     }
   };
 
+  // Convert a ZIP entry into a display payload (json/image/text).
   const readFileData = async (activeZip, fileName) => {
     const fileData = { fileName };
 
-    if (fileName.endsWith('.json')) {
+    if (isJsonLikeFile(fileName, mode)) {
       const content = await activeZip.files[fileName].async('string');
-      fileData.type = 'json';
-      fileData.content = JSON.parse(content);
+      try {
+        fileData.type = 'json';
+        fileData.content = JSON.parse(content);
+      } catch (error) {
+        // If parsing fails (e.g., HJSON), keep raw text.
+        fileData.type = 'text';
+        fileData.content = content;
+      }
     } else if (fileName.match(/\.(png|jpg|jpeg)$/)) {
       const blob = await activeZip.files[fileName].async('blob');
       fileData.type = 'image';
@@ -118,7 +131,7 @@ const ZipContentsPanel = ({
   };
 
   const getFileIcon = (fileName) => {
-    if (fileName.endsWith('.json')) return '[JSON]';
+    if (isJsonLikeFile(fileName, mode)) return '[JSON]';
     if (fileName.match(/\.(png|jpg|jpeg)$/)) return '[IMG]';
     return '[TXT]';
   };

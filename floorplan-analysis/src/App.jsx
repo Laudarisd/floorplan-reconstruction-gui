@@ -1,5 +1,5 @@
 // Codex Note: App.jsx - Main logic for this module/task.
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import './style/base.css';
 import Header from './components/layout/Header';
@@ -14,17 +14,28 @@ import DwgVisualizationPanel from './dwg_mode/components/DwgVisualizationPanel';
 import DwgFileUploadPanel from './dwg_mode/components/upload/DwgFileUploadPanel';
 
 function App() {
-  // App-level UI state (server config, current selection, and history)
+  const isImageFile = (name) => /\.(png|jpg|jpeg|bmp|gif|webp)$/i.test(name || '');
+
+  // App-level UI state (server config, current selection, and history).
   const [serverConfig, setServerConfig] = useState({
     ip: '',
     port: '',
   });
   const [selectedMode, setSelectedMode] = useState('image');
+  // Image-mode ZIP + selection state.
   const [zipBlob, setZipBlob] = useState(null);
   const [zipData, setZipData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [currentImageName, setCurrentImageName] = useState('');
+  // DWG-mode ZIP + selection state (kept separate from image mode).
+  const [dwgZipBlob, setDwgZipBlob] = useState(null);
+  const [dwgZipData, setDwgZipData] = useState(null);
+  const [dwgInputZipData, setDwgInputZipData] = useState(null);
+  const [dwgSelectedFile, setDwgSelectedFile] = useState(null);
+  const [dwgLayerImages, setDwgLayerImages] = useState([]);
+  const [selectedDwgLayer, setSelectedDwgLayer] = useState(null);
+  const dwgLayerUrlsRef = useRef([]);
   const [historyEntries, setHistoryEntries] = useState([]);
   const [activeHistoryId, setActiveHistoryId] = useState(null);
   const isRestoringRef = useRef(false);
@@ -33,11 +44,17 @@ function App() {
     dataCheck: true,
     visualization: true,
   });
+  // Independent loading flags for DWG flow.
+  const [dwgLoading, setDwgLoading] = useState({
+    dataContent: true,
+    dataCheck: true,
+    visualization: true,
+  });
   const [dwgUploadData, setDwgUploadData] = useState(null);
   const [dwgHistoryEntries, setDwgHistoryEntries] = useState([]);
   const [activeDwgHistoryId, setActiveDwgHistoryId] = useState(null);
 
-  // Handle upload completion (ZIP blob + preview image)
+  // Handle image-mode upload completion (ZIP blob + preview image).
   const handleZipReceived = async (blob, imageDataUrl, imageName = '') => {
     setZipBlob(blob);
     setUploadedImage(imageDataUrl);
@@ -53,7 +70,7 @@ function App() {
     setActiveHistoryId(payload.id);
   };
 
-  // Persist ZIP data into history when extraction finishes
+  // Persist image-mode ZIP data into history when extraction finishes.
   const handleZipDataReady = (zipPayload) => {
     if (isRestoringRef.current) {
       isRestoringRef.current = false;
@@ -71,7 +88,7 @@ function App() {
     });
   };
 
-  // Single-click JSON selection (forces redraw via nonce)
+  // Single-click JSON selection (forces redraw via nonce).
   const handleFileSelected = (fileData) => {
     const nextFile = { ...fileData, _nonce: Date.now() };
     setSelectedFile(nextFile);
@@ -83,7 +100,84 @@ function App() {
     );
   };
 
-  // Restore a previous history entry (image + zip + selection)
+  // DWG: store returned ZIP and drive preview panels.
+  const handleDwgZipReceived = (blob, zipName = '') => {
+    setDwgZipBlob(blob);
+    setDwgZipData(null);
+    setDwgSelectedFile(null);
+    setCurrentImageName(zipName || 'DWG ZIP');
+  };
+
+  // DWG: keep extracted ZIP state for file list + scale info.
+  const handleDwgZipDataReady = (zipPayload) => {
+    setDwgZipData(zipPayload);
+  };
+
+  // DWG: keep extracted input ZIP state for original/layer images.
+  const handleDwgInputZipReady = (zipPayload) => {
+    setDwgInputZipData(zipPayload);
+  };
+
+  // DWG: handle ZIP entry selection in Data Check panel.
+  const handleDwgFileSelected = (fileData) => {
+    const nextFile = { ...fileData, _nonce: Date.now() };
+    setDwgSelectedFile(nextFile);
+    setDwgLoading((prev) => ({ ...prev, dataCheck: false, visualization: false }));
+  };
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadLayerImages = async () => {
+      if (!dwgInputZipData?.zip || !dwgInputZipData?.files?.length) {
+        dwgLayerUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+        dwgLayerUrlsRef.current = [];
+        setDwgLayerImages([]);
+        setSelectedDwgLayer(null);
+        return;
+      }
+
+      const layerFiles = dwgInputZipData.files.filter((fileName) => {
+        const lower = fileName.replace(/\\/g, '/').toLowerCase();
+        return isImageFile(lower) && /(^|\/)layer_img\//i.test(lower);
+      });
+
+      const fallbackLayerFiles =
+        layerFiles.length > 0
+          ? layerFiles
+          : dwgInputZipData.files.filter((fileName) => {
+              const lower = fileName.replace(/\\/g, '/').toLowerCase();
+              return isImageFile(lower) && !/(^|\/)original_img\//i.test(lower);
+            });
+
+      const items = await Promise.all(
+        fallbackLayerFiles.map(async (fileName) => {
+          const blob = await dwgInputZipData.zip.files[fileName].async('blob');
+          const url = URL.createObjectURL(blob);
+          return { name: fileName, url };
+        })
+      );
+
+      if (isCancelled) {
+        items.forEach((item) => URL.revokeObjectURL(item.url));
+        return;
+      }
+
+      dwgLayerUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      dwgLayerUrlsRef.current = items.map((item) => item.url);
+
+      setDwgLayerImages(items);
+      setSelectedDwgLayer(items[0] || null);
+    };
+
+    loadLayerImages();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [dwgInputZipData]);
+
+  // Restore a previous image-mode history entry (image + zip + selection).
   const handleHistorySelect = (entry) => {
     isRestoringRef.current = true;
     setZipBlob(entry.zipBlob);
@@ -138,7 +232,13 @@ function App() {
       <div className="container">
         <div className="three-columns">
           {selectedMode === 'dwg' ? (
-            <DwgFileUploadPanel onDwgDataReady={handleDwgDataReady} />
+            <DwgFileUploadPanel
+              onDwgDataReady={handleDwgDataReady}
+              onZipReceived={handleDwgZipReceived}
+              onInputZipReady={handleDwgInputZipReady}
+              serverConfig={serverConfig}
+              setLoading={setDwgLoading}
+            />
           ) : (
             <FileUploadPanel
               serverConfig={serverConfig}
@@ -147,19 +247,32 @@ function App() {
             />
           )}
           <ZipContentsPanel
-            zipBlob={zipBlob}
-            loading={loading.dataContent}
-            setLoading={setLoading}
-            onFileSelected={handleFileSelected}
-            setZipData={setZipData}
-            onZipDataReady={handleZipDataReady}
+            zipBlob={selectedMode === 'dwg' ? dwgZipBlob : zipBlob}
+            loading={selectedMode === 'dwg' ? dwgLoading.dataContent : loading.dataContent}
+            setLoading={selectedMode === 'dwg' ? setDwgLoading : setLoading}
+            onFileSelected={selectedMode === 'dwg' ? handleDwgFileSelected : handleFileSelected}
+            setZipData={selectedMode === 'dwg' ? setDwgZipData : setZipData}
+            onZipDataReady={selectedMode === 'dwg' ? handleDwgZipDataReady : handleZipDataReady}
+            mode={selectedMode}
           />
-          <JsonPreviewPanel selectedFile={selectedFile} loading={loading.dataCheck} />
+          <JsonPreviewPanel
+            selectedFile={selectedMode === 'dwg' ? dwgSelectedFile : selectedFile}
+            loading={selectedMode === 'dwg' ? dwgLoading.dataCheck : loading.dataCheck}
+            mode={selectedMode}
+          />
         </div>
 
-        <div className="visualization-row">
+        <div className={`visualization-row ${selectedMode === 'dwg' ? 'dwg-visualization-row' : ''}`.trim()}>
           {selectedMode === 'dwg' ? (
-            <DwgVisualizationPanel dwgUploadData={dwgUploadData} />
+            <DwgVisualizationPanel
+              dwgUploadData={dwgUploadData}
+              dwgZipData={dwgZipData}
+              dwgInputZipData={dwgInputZipData}
+              selectedFile={dwgSelectedFile}
+              selectedLayer={selectedDwgLayer}
+              loading={dwgLoading.visualization}
+              setLoading={setDwgLoading}
+            />
           ) : (
             <VisualizationPanel
               zipData={zipData}
@@ -170,11 +283,36 @@ function App() {
             />
           )}
           {selectedMode === 'dwg' ? (
-            <HistoryPanel
-              entries={dwgHistoryEntries}
-              activeId={activeDwgHistoryId}
-              onSelect={handleDwgHistorySelect}
-            />
+            <div className="dwg-side-panel">
+              <aside className="dwg-layer-list">
+                <h4 className="dwg-layer-title">Layers List</h4>
+                {dwgLayerImages.length === 0 ? (
+                  <p className="dwg-layer-empty">No layers found.</p>
+                ) : (
+                  <ol className="dwg-layer-items">
+                    {dwgLayerImages.map((item) => (
+                      <li key={item.name}>
+                        <button
+                          type="button"
+                          className={`dwg-layer-item ${
+                            selectedDwgLayer?.name === item.name ? 'is-active' : ''
+                          }`}
+                          onClick={() => setSelectedDwgLayer(item)}
+                        >
+                          <img src={item.url} alt={item.name} className="dwg-layer-thumb" />
+                          <span className="dwg-layer-name">{item.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </aside>
+              <HistoryPanel
+                entries={dwgHistoryEntries}
+                activeId={activeDwgHistoryId}
+                onSelect={handleDwgHistorySelect}
+              />
+            </div>
           ) : (
             <HistoryPanel
               entries={historyEntries}

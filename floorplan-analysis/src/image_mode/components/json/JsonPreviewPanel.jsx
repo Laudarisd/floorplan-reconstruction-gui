@@ -15,7 +15,7 @@ const JSON_CLASSNAMES = {
   previewContainer: 'data-preview',
 };
 
-const JsonPreviewPanel = ({ selectedFile, loading }) => {
+const JsonPreviewPanel = ({ selectedFile, loading, mode = 'image' }) => {
   // Render JSON/image/text preview for selected ZIP entry
   const renderContent = () => {
     if (!selectedFile) {
@@ -54,8 +54,11 @@ const JsonPreviewPanel = ({ selectedFile, loading }) => {
     );
   };
 
+  // Apply DWG-only sizing fix via class.
+  const containerClassName = `${JSON_CLASSNAMES.column} ${mode === 'dwg' ? 'dwg-data-check' : ''}`.trim();
+
   return (
-    <div className={JSON_CLASSNAMES.column}>
+    <div className={containerClassName}>
       <h3>{JSON_COPY.title}</h3>
       {loading ? (
         <div id="dataCheckGif" className="gif-placeholder">
