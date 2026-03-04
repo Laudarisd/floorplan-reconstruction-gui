@@ -31,10 +31,49 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
   gap: 24px;
-  align-items: center;
+  align-items: start;
   border-top: 1px solid #d7ddd4;
   padding-top: 20px;
   margin-bottom: 30px;
+}
+
+.visualization-row:not(.dwg-visualization-row) {
+  --image-analysis-row-height: 980px;
+  --map-metrics-height: 430px;
+  --side-panel-gap: 12px;
+  min-height: var(--image-analysis-row-height);
+  align-items: stretch;
+}
+
+.visualization-row:not(.dwg-visualization-row) > .visualization-panel-wrap,
+.visualization-row:not(.dwg-visualization-row) > .image-side-panel {
+  height: var(--image-analysis-row-height);
+}
+
+.image-side-panel {
+  width: 100%;
+  max-width: 220px;
+  justify-self: end;
+  display: grid;
+  grid-template-rows: var(--map-metrics-height) calc(var(--image-analysis-row-height) - var(--map-metrics-height) - var(--side-panel-gap));
+  gap: var(--side-panel-gap);
+  margin-top: 0;
+}
+
+.image-side-block {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+}
+
+.image-side-title {
+  margin: 0;
+  color: #4f5f43;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  padding-left: 0;
 }
 
 @media (max-width: 1024px) {
@@ -44,5 +83,17 @@ body {
 
   .visualization-row {
     grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .image-side-panel {
+    max-width: none;
+    grid-template-rows: auto;
+    height: auto;
+    margin-top: 0;
+  }
+
+  .image-side-block {
+    grid-template-rows: auto;
   }
 }

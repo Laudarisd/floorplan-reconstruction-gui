@@ -7,6 +7,19 @@ import {
   drawAnnotations,
 } from '../services/visualizationService.jsx';
 
+const MAX_RENDER_PIXELS = 3_000_000;
+const MAX_RENDER_SIDE = 4096;
+const GT_FIXED_PALETTE = [
+  'hsl(135,70%,42%)',
+  'hsl(155,70%,40%)',
+  'hsl(175,70%,40%)',
+  'hsl(95,70%,42%)',
+  'hsl(120,65%,45%)',
+  'hsl(145,65%,44%)',
+  'hsl(165,65%,42%)',
+  'hsl(185,65%,42%)',
+];
+
 export const useVisualization = (uploadedImage) => {
   // Canvas visualization state + helpers
   const [zoom, setZoom] = useState(1);
@@ -19,9 +32,15 @@ export const useVisualization = (uploadedImage) => {
   const roiTransformRef = useRef(createRoiTransform());
   const dimensionAreasRef = useRef({});
   const currentObjsRef = useRef([]);
+  const predictionObjsRef = useRef([]);
+  const gtObjsRef = useRef([]);
   const classMapRef = useRef({});
+  const predictionClassMapRef = useRef({});
+  const gtClassMapRef = useRef({});
   const classColorsRef = useRef({});
   const [hiddenDimensionIndices, setHiddenDimensionIndices] = useState(new Set());
+  const [showPredictionLayer, setShowPredictionLayer] = useState(true);
+  const [showGtLayer, setShowGtLayer] = useState(true);
 
   const canvasRef = useRef(null);
   const viewerRef = useRef(null);
@@ -34,22 +53,34 @@ export const useVisualization = (uploadedImage) => {
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
+  // Dynamic quality scaler to keep heavy-image redraw cost bounded.
+  const getRenderScaleForZoom = useCallback((zoomLevel) => {
+    if (!originalWidth || !originalHeight || !zoomLevel) return 1;
+    const scaledWidth = originalWidth * zoomLevel;
+    const scaledHeight = originalHeight * zoomLevel;
+
+    const pixelScale = Math.sqrt(MAX_RENDER_PIXELS / (scaledWidth * scaledHeight));
+    const sideScale = Math.min(MAX_RENDER_SIDE / scaledWidth, MAX_RENDER_SIDE / scaledHeight);
+
+    return Math.min(1, pixelScale, sideScale);
+  }, [originalWidth, originalHeight]);
+
   // Initialize image dimensions on load
   // Compute image size + fit-to-view zoom
-  const handleImageLoad = useCallback((img) => {
+  // Base image load handler for natural size + fit-to-view initialization.
+  const handleImageLoad = useCallback((imgEl) => {
     if (!uploadedImage) return;
-    
-    const image = new Image();
-    image.onload = () => {
-      setOriginalWidth(image.naturalWidth);
-      setOriginalHeight(image.naturalHeight);
-      
+
+    const finalizeImageLoad = (naturalWidth, naturalHeight) => {
+      setOriginalWidth(naturalWidth);
+      setOriginalHeight(naturalHeight);
+
       // Wait a tick to ensure viewer DOM is ready with proper dimensions
       setTimeout(() => {
         if (viewerRef.current && viewerRef.current.clientWidth > 0) {
           const minZoom = Math.min(
-            viewerRef.current.clientWidth / image.naturalWidth,
-            viewerRef.current.clientHeight / image.naturalHeight
+            viewerRef.current.clientWidth / naturalWidth,
+            viewerRef.current.clientHeight / naturalHeight
           );
           minZoomRef.current = minZoom; // Store the fit-to-screen zoom
           zoomRef.current = minZoom;
@@ -58,12 +89,47 @@ export const useVisualization = (uploadedImage) => {
         }
       }, 100); // Increased delay to ensure DOM is fully ready
     };
+
+    if (imgEl?.naturalWidth && imgEl?.naturalHeight) {
+      finalizeImageLoad(imgEl.naturalWidth, imgEl.naturalHeight);
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      finalizeImageLoad(image.naturalWidth, image.naturalHeight);
+    };
     image.src = uploadedImage;
   }, [uploadedImage]);
 
   // Visualize JSON data with annotations
   // Normalize JSON data into renderable objects
-  const visualizeJson = useCallback((fileName, selectedJson) => {
+  // Build class-to-objects map and keep color assignments stable.
+  const buildClassMap = useCallback((normalized, options = {}) => {
+    const { fixedLayerColors = null } = options;
+    const newClassMap = {};
+    const newClassColors = { ...classColorsRef.current };
+
+    for (const obj of normalized) {
+      const cls = obj._cls || 'Unknown';
+      if (!newClassMap[cls]) {
+        newClassMap[cls] = [];
+        if (fixedLayerColors && fixedLayerColors[cls]) {
+          newClassColors[cls] = fixedLayerColors[cls];
+        } else if (!newClassColors[cls]) {
+          newClassColors[cls] = randomColor();
+        }
+      }
+      obj._color = newClassColors[cls];
+      newClassMap[cls].push(obj);
+    }
+
+    classColorsRef.current = newClassColors;
+    return newClassMap;
+  }, []);
+
+  // Shared normalizer used by both prediction and GT layers.
+  const normalizeToLayerObjects = useCallback((fileName, selectedJson) => {
     if (!selectedJson) return;
 
     const result = normalizeObjectsForRender(
@@ -85,63 +151,113 @@ export const useVisualization = (uploadedImage) => {
       dimensionAreasRef.current = result.newDimensionAreas;
     }
 
-    const normalized = result.objects;
+    return result.objects;
+  }, []);
+
+  // Convert prediction JSON payload into renderer-friendly object map.
+  const visualizeJson = useCallback((fileName, selectedJson) => {
+    const normalized = normalizeToLayerObjects(fileName, selectedJson);
+    if (!normalized) return;
+
+    predictionObjsRef.current = normalized;
     currentObjsRef.current = normalized;
 
-    // Build class map with colors - REUSE existing colors if available
-    const newClassMap = {};
-    const newClassColors = { ...classColorsRef.current }; // Copy existing colors
-    
-    for (const obj of normalized) {
-      const cls = obj._cls || 'Unknown';
-      if (!newClassMap[cls]) {
-        newClassMap[cls] = [];
-        // Only generate new color if this class doesn't have one yet
-        if (!newClassColors[cls]) {
-          newClassColors[cls] = randomColor();
-        }
-      }
-      obj._color = newClassColors[cls]; // Use the consistent color
-      newClassMap[cls].push(obj);
-    }
-
+    const newClassMap = buildClassMap(normalized);
+    predictionClassMapRef.current = newClassMap;
     classMapRef.current = newClassMap;
-    classColorsRef.current = newClassColors;
 
     return newClassMap;
-  }, []);
+  }, [buildClassMap, normalizeToLayerObjects]);
+
+  // Convert GT JSON payload into renderer-friendly object map.
+  const visualizeGtJson = useCallback((fileName, selectedJson) => {
+    const normalized = normalizeToLayerObjects(fileName, selectedJson);
+    if (!normalized) return;
+
+    // Deterministic GT palette keeps GT layer visually separate from prediction layer.
+    const gtClasses = Array.from(new Set(normalized.map((obj) => obj._cls || 'Unknown'))).sort();
+    const gtClassColors = {};
+    gtClasses.forEach((cls, idx) => {
+      gtClassColors[cls] = GT_FIXED_PALETTE[idx % GT_FIXED_PALETTE.length];
+    });
+
+    gtObjsRef.current = normalized;
+    const newClassMap = buildClassMap(normalized, { fixedLayerColors: gtClassColors });
+    gtClassMapRef.current = newClassMap;
+    return newClassMap;
+  }, [buildClassMap, normalizeToLayerObjects]);
 
   // Redraw canvas with current state
   // Draw current objects on canvas
+  // Draw annotation layer onto canvas with current toggles and zoom.
   const redrawAnnotations = useCallback(() => {
     if (!canvasRef.current) return;
 
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
-    drawAnnotations(
-      ctx,
-      canvasRef.current,
-      classMapRef.current,
-      hiddenDimensionIndices,
-      zoom,
-      showAnnotationText,
-      showKeyPoints
-    );
-  }, [zoom, showAnnotationText, showKeyPoints, hiddenDimensionIndices]);
+    const renderScale = getRenderScaleForZoom(zoom);
+    let shouldClear = true;
+
+    if (showPredictionLayer) {
+      drawAnnotations(
+        ctx,
+        canvasRef.current,
+        predictionClassMapRef.current,
+        hiddenDimensionIndices,
+        zoom * renderScale,
+        showAnnotationText,
+        showKeyPoints,
+        true,
+        shouldClear
+      );
+      shouldClear = false;
+    }
+
+    if (showGtLayer) {
+      drawAnnotations(
+        ctx,
+        canvasRef.current,
+        gtClassMapRef.current,
+        hiddenDimensionIndices,
+        zoom * renderScale,
+        showAnnotationText,
+        showKeyPoints,
+        false,
+        shouldClear
+      );
+      shouldClear = false;
+    }
+
+    if (shouldClear) {
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    }
+  }, [
+    zoom,
+    showAnnotationText,
+    showKeyPoints,
+    hiddenDimensionIndices,
+    showPredictionLayer,
+    showGtLayer,
+    getRenderScaleForZoom,
+  ]);
 
   // Update view when dimensions or zoom changes
   // Update zoomed sizes + redraw canvas
+  // Sync image/canvas dimensions with current zoom then redraw.
   const updateView = useCallback(() => {
     if (!originalWidth || !originalHeight || !canvasRef.current) return;
 
     const z = zoom;
+    const renderScale = getRenderScaleForZoom(z);
     const displayWidth = originalWidth * z;
     const displayHeight = originalHeight * z;
+    const renderWidth = displayWidth * renderScale;
+    const renderHeight = displayHeight * renderScale;
 
     // Update canvas size
-    canvasRef.current.width = displayWidth;
-    canvasRef.current.height = displayHeight;
+    canvasRef.current.width = renderWidth;
+    canvasRef.current.height = renderHeight;
     canvasRef.current.style.width = `${displayWidth}px`;
     canvasRef.current.style.height = `${displayHeight}px`;
 
@@ -160,7 +276,7 @@ export const useVisualization = (uploadedImage) => {
     }
 
     redrawAnnotations();
-  }, [originalWidth, originalHeight, zoom, redrawAnnotations]);
+  }, [originalWidth, originalHeight, zoom, redrawAnnotations, getRenderScaleForZoom]);
 
   const zoomIn = () => setZoom(prev => Math.min(prev * 1.1, 5));
   const zoomOut = () => setZoom(prev => Math.max(prev * 0.9, minZoomRef.current));
@@ -171,6 +287,7 @@ export const useVisualization = (uploadedImage) => {
     setZoom(fitZoom);
   };
 
+  // Build zoom anchor so pointer stays on same content spot while zooming.
   const createZoomAnchor = useCallback((clientX, clientY, fromZoom) => {
     const viewer = viewerRef.current;
     if (!viewer || !originalWidth || !originalHeight) return null;
@@ -187,8 +304,9 @@ export const useVisualization = (uploadedImage) => {
     const fy = contentY / oldScaledH;
 
     return { mouseX, mouseY, fx, fy };
-  }, [originalWidth, originalHeight]);
+  }, [originalWidth, originalHeight, getRenderScaleForZoom]);
 
+  // Apply zoom and scroll offsets using anchor lock.
   const applyZoomWithAnchor = useCallback((toZoom, anchor) => {
     const viewer = viewerRef.current;
     if (!viewer || !originalWidth || !originalHeight || !anchor) return;
@@ -202,6 +320,7 @@ export const useVisualization = (uploadedImage) => {
     });
   }, [originalWidth, originalHeight]);
 
+  // Public zoom helper for mouse wheel/double-click zoom-to-cursor.
   const zoomToPoint = useCallback((nextZoom, clientX, clientY) => {
     if (!originalWidth || !originalHeight) return;
 
@@ -232,10 +351,12 @@ export const useVisualization = (uploadedImage) => {
     });
   };
 
+  // Keep mutable zoom ref aligned with React state.
   useEffect(() => {
     zoomRef.current = zoom;
   }, [zoom]);
 
+  // Register pointer/wheel listeners for pan and smooth wheel zoom.
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) return undefined;
@@ -381,6 +502,7 @@ export const useVisualization = (uploadedImage) => {
     zoomToPoint,
     getZoomPercentage,
     visualizeJson,
+    visualizeGtJson,
     updateView,
     redrawAnnotations,
     canvasRef,
@@ -388,6 +510,10 @@ export const useVisualization = (uploadedImage) => {
     classMapRef,
     hiddenDimensionIndices,
     toggleDimensionIndex,
+    showPredictionLayer,
+    setShowPredictionLayer,
+    showGtLayer,
+    setShowGtLayer,
     handleImageLoad,
     currentObjsRef,
     dimensionAreasRef,

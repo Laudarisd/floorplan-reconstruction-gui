@@ -80,6 +80,7 @@ export const isSpaceOcrJsonFile = (name) => _fnameLower(name).includes('space_oc
 
 const parseConfidenceScore = (obj) => {
   if (!obj || typeof obj !== 'object') return null;
+  // Confidence keys (checked in order): confidence_score -> confidence -> score.
   const candidate = obj.confidence_score ?? obj.confidence ?? obj.score;
   if (candidate === undefined || candidate === null || candidate === '') return null;
   const parsed = Number(candidate);
@@ -89,6 +90,8 @@ const parseConfidenceScore = (obj) => {
 const pickSpaceClass = (obj) => {
   if (!obj || typeof obj !== 'object') return 'space_ocr';
 
+  // Space-class keys (first non-empty wins):
+  // segmentation_class, class_name, space_class, room_class, category, type.
   const candidates = [
     obj.segmentation_class,
     obj.class_name,
@@ -125,10 +128,12 @@ export const createRoiTransform = () => ({
 });
 
 export const extractDimensionAreasFromCropJson = (cropJson) => {
+  // Crop JSON path: json.objects[].
   const objs = cropJson?.objects || [];
   const dimensionAreas = {};
 
   for (const o of objs) {
+    // Reads: class_name, idx, bbox_width, bbox_height, original_polygon, bbox_polygon.
     if (o.class_name === 'dimension_area' && o.idx !== undefined) {
       dimensionAreas[o.idx] = {
         bbox_width: o.bbox_width || 0,
@@ -141,19 +146,24 @@ export const extractDimensionAreasFromCropJson = (cropJson) => {
 };
 
 export const ingestRoiTransformFromCropJson = (cropJson) => {
+  // Crop JSON path: json.objects[].
   const objs = cropJson?.objects || [];
   if (!Array.isArray(objs) || objs.length === 0) return null;
 
+  // Background object key: class_name === "background".
   const bg = objs.find((o) => o?.class_name === 'background');
   if (!bg) return null;
 
+  // Reads original image size keys: original_size.width, original_size.height.
   const origW = Number(bg.original_size?.width || 0);
   const origH = Number(bg.original_size?.height || 0);
+  // Reads crop size keys: crop_size.width, crop_size.height.
   const cropW = Number(bg.crop_size?.width || 0);
   const cropH = Number(bg.crop_size?.height || 0);
 
   if (!origW || !origH || !cropW || !cropH) return null;
 
+  // Reads ROI polygon from keys: original_polygon (preferred) or bbox_polygon.
   const roiPoly = bg.original_polygon || bg.bbox_polygon;
   if (!roiPoly) return null;
 
@@ -216,10 +226,13 @@ export const cropToOriginalPts = (pts, roiTransform) => {
 
 // Normalize objects for rendering
 export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensionAreas) => {
+  // Supported object roots: json.objects[] OR json.data.objects[].
   const objs = json?.objects || json?.data?.objects || [];
   const out = [];
 
   if (isCropJsonFile(fileName)) {
+    // crop*.json extraction:
+    // class_name, original_polygon|bbox_polygon, bbox_polygon.
     const newRoiTransform = ingestRoiTransformFromCropJson(json);
     const newDimensionAreas = extractDimensionAreasFromCropJson(json);
     
@@ -242,6 +255,8 @@ export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensio
   }
 
   if (isDimOcrJsonFile(fileName)) {
+    // dim_ocr*.json extraction:
+    // crop_idx, polygon, text, confidence_score|confidence|score.
     for (const o of objs) {
       const cropIdx = o.crop_idx;
       const pts = anyPolygonToPoints(o.polygon);
@@ -273,6 +288,8 @@ export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensio
   }
 
   for (const o of objs) {
+    // Generic extraction fallback keys:
+    // class_name, text, polygon|bbox_polygon|original_polygon.
     let cls = o.class_name || 'unknown';
 
     if (isSpaceOcrJsonFile(fileName)) {
@@ -283,10 +300,14 @@ export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensio
       cls = 'symbol_ocr';
     }
 
+    // symbol_ocr extraction keys:
+    // symbol_polygon, size_polygon, detail_polygon, size, detail.
     const symPts = anyPolygonToPoints(o.symbol_polygon);
     const sizePts = anyPolygonToPoints(o.size_polygon);
     const detailPts = anyPolygonToPoints(o.detail_polygon);
 
+    // Main geometry key preference:
+    // symbol_polygon -> polygon -> bbox_polygon -> original_polygon.
     const mainPts = symPts.length
       ? symPts
       : anyPolygonToPoints(o.polygon || o.bbox_polygon || o.original_polygon);
@@ -296,6 +317,8 @@ export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensio
     const convertedDetailPts = cropToOriginalPts(detailPts, roiTransform);
 
     let label = cls;
+    // Label key preference by mode:
+    // space_ocr uses text when present, symbol_ocr uses size+detail, otherwise text/class.
     if (isSpaceOcrJsonFile(fileName) && o.text) {
       label = o.text;
     } else if (isSymbolOcrJsonFile(fileName)) {
@@ -350,11 +373,16 @@ export const drawAnnotations = (
   hiddenDimensionIndices,
   zoom,
   showAnnotationText,
-  showKeyPoints
+  showKeyPoints,
+  useClassToggles = true,
+  clearFirst = true
 ) => {
   if (!canvas) return 0;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (clearFirst) {
+    // Clear canvas only once for multi-layer rendering (prediction + GT overlays).
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   const z = zoom;
   const BORDER_WIDTH = 3 * z;
@@ -413,9 +441,11 @@ export const drawAnnotations = (
   };
 
   Object.keys(classMap).forEach((cls) => {
-    const toggleId = `class-toggle-${cls.replace(/\s/g, '-').replace(/:/g, '-')}`;
-    const toggle = document.getElementById(toggleId);
-    if (!toggle || !toggle.checked) return;
+    if (useClassToggles) {
+      const toggleId = `class-toggle-${cls.replace(/\s/g, '-').replace(/:/g, '-')}`;
+      const toggle = document.getElementById(toggleId);
+      if (!toggle || !toggle.checked) return;
+    }
 
     for (const o of classMap[cls]) {
       if (o.kind === 'ocr_text' && hiddenDimensionIndices.has(o.cropIdx)) {

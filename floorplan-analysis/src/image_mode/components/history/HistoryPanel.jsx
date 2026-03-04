@@ -16,11 +16,11 @@ const HISTORY_CLASSNAMES = {
   active: 'is-active',
 };
 
-const HistoryPanel = ({ entries, activeId, onSelect }) => {
+const HistoryPanel = ({ entries, activeId, onSelect, className = '', showTitle = true }) => {
   // History list (most recent first)
   return (
-    <aside className={HISTORY_CLASSNAMES.panel}>
-      <h4 className={HISTORY_CLASSNAMES.title}>{HISTORY_COPY.title}</h4>
+    <aside className={`${HISTORY_CLASSNAMES.panel} ${className}`.trim()}>
+      {showTitle && <h4 className={HISTORY_CLASSNAMES.title}>{HISTORY_COPY.title}</h4>}
       {entries.length === 0 ? (
         <p className={HISTORY_CLASSNAMES.empty}>{HISTORY_COPY.empty}</p>
       ) : (

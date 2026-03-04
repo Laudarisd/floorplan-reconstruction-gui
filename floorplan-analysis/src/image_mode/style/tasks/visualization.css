@@ -2,24 +2,41 @@
 .visualization-panel-wrap {
   width: 100%;
   min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .viz-shell {
   display: grid;
   grid-template-columns: minmax(100px, 118px) minmax(0, 1fr);
   gap: 12px;
-  align-items: center;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .viz-section-title {
-  margin: 0 0 8px 2px;
+  margin: 0;
   color: #4f5f43;
+  font-size: 17px;
+  text-align: center;
+}
+
+.viz-main-block {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
 }
 
 .visualization-section {
-  display: block;
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   width: 100%;
   max-width: none;
   justify-self: stretch;
@@ -31,7 +48,31 @@
 }
 
 .gif-content {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.viz-loading-state {
+  /* Make loading state consume available center panel height. */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viz-loading-state .gif-image {
+  /* Bigger gif specifically for visualization panel loading state. */
+  width: min(82%, 480px);
+  max-height: 320px;
+}
+
+.viz-loading-state .gif-caption {
+  /* Slightly larger caption for center loading block readability. */
+  font-size: 15px;
 }
 
 .btn {
@@ -48,16 +89,44 @@
 .viz-actions-sidebar {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 180px;
+  min-height: 0;
+  height: 100%;
   padding: 12px 8px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  align-self: center;
+  align-self: stretch;
+  overflow-y: auto;
+}
+
+.viz-controls-column {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.viz-side-block {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+}
+
+.viz-side-panel-title {
+  margin: 0;
+  color: #4f5f43;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  padding-left: 0;
 }
 
 .viz-action-btn {
@@ -70,6 +139,69 @@
   white-space: nowrap;
 }
 
+.viz-analyze-panel {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  padding: 10px 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  overflow-y: auto;
+}
+
+.viz-analyze-toggle {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.viz-analyze-form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.viz-analyze-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.viz-analyze-row label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4f5f43;
+}
+
+.viz-analyze-row select,
+.viz-analyze-row input[type="text"],
+.viz-analyze-row input[type="file"] {
+  width: 100%;
+  border: 1px solid #d7ddd2;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  background: #f9fbf7;
+}
+
+.viz-analyze-file-meta {
+  font-size: 10px;
+  color: #5f6b55;
+  word-break: break-word;
+}
+
+.viz-analyze-file-hint {
+  font-size: 10px;
+  color: #7a8570;
+}
+
+.viz-analyze-action-btn {
+  width: 100%;
+  max-width: none;
+}
+
 .zoom-label {
   margin-top: 4px;
   font-weight: bold;
@@ -80,11 +212,13 @@
 
 .viz-main {
   flex: 1 1 auto;
+  height: 100%;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .annotation-controls {
@@ -127,7 +261,8 @@
 
 .viewer-panel {
   width: 100%;
-  height: 800px;
+  height: 100%;
+  min-height: 0;
   overflow: scroll !important;
   overflow-x: scroll !important;
   overflow-y: scroll !important;
@@ -187,6 +322,7 @@
 }
 
 .viz-empty-state {
+  /* Empty-state block shown when no uploaded image is available yet. */
   width: 100%;
   min-height: 260px;
   display: flex;

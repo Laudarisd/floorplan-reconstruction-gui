@@ -10,6 +10,7 @@ import ZipContentsPanel from './image_mode/components/zip/ZipContentsPanel';
 import JsonPreviewPanel from './image_mode/components/json/JsonPreviewPanel';
 import VisualizationPanel from './image_mode/components/visualization/VisualizationPanel';
 import HistoryPanel from './image_mode/components/history/HistoryPanel';
+import MapMetricsPanel from './image_mode/components/metrics/MapMetricsPanel';
 import DwgVisualizationPanel from './dwg_mode/components/DwgVisualizationPanel';
 import DwgFileUploadPanel from './dwg_mode/components/upload/DwgFileUploadPanel';
 
@@ -230,6 +231,7 @@ function App() {
       <Header />
 
       <div className="container">
+        {/* Top three-column strip: upload -> zip contents -> json preview. */}
         <div className="three-columns">
           {selectedMode === 'dwg' ? (
             <DwgFileUploadPanel
@@ -262,6 +264,7 @@ function App() {
           />
         </div>
 
+        {/* Bottom row: visualization area (left/center) + side panels (right). */}
         <div className={`visualization-row ${selectedMode === 'dwg' ? 'dwg-visualization-row' : ''}`.trim()}>
           {selectedMode === 'dwg' ? (
             <DwgVisualizationPanel
@@ -283,6 +286,7 @@ function App() {
             />
           )}
           {selectedMode === 'dwg' ? (
+            // DWG-mode side stack: layer list + history.
             <div className="dwg-side-panel">
               <aside className="dwg-layer-list">
                 <h4 className="dwg-layer-title">Layers List</h4>
@@ -314,11 +318,25 @@ function App() {
               />
             </div>
           ) : (
-            <HistoryPanel
-              entries={historyEntries}
-              activeId={activeHistoryId}
-              onSelect={handleHistorySelect}
-            />
+            // Image-mode side stack: map metrics panel + history panel.
+            <div className="image-side-panel">
+              <section className="image-side-block">
+                {/* Metrics panel title (outside card). */}
+                <h4 className="image-side-title">Map Metrics</h4>
+                <MapMetricsPanel showTitle={false} />
+              </section>
+              <section className="image-side-block">
+                {/* History panel title (outside card). */}
+                <h4 className="image-side-title">History</h4>
+                <HistoryPanel
+                  entries={historyEntries}
+                  activeId={activeHistoryId}
+                  onSelect={handleHistorySelect}
+                  className="history-panel--fixed"
+                  showTitle={false}
+                />
+              </section>
+            </div>
           )}
         </div>
       </div>

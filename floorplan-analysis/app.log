@@ -1,0 +1,156 @@
+ UPDATE  The latest version of `serve` is 14.2.6
+ INFO  Accepting connections at http://localhost:5173
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 200 in 26 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /assets/index-Beg3fn5d.js
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 200 in 7 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 200 in 13 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 12 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 11 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 12 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 7 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 53 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 62 ms
+ HTTP  2026. 3. 4. PM 7:19:09 1.220.101.194 Returned 304 in 80 ms
+ HTTP  2026. 3. 4. PM 7:19:10 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:19:10 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 200 in 3 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /assets/index--OM3XxfB.js
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 200 in 6 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 13 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 13 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 13 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 6 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 51 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 60 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 79 ms
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:21:46 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 200 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /assets/index-JgQ0uPVA.js
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 200 in 6 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 14 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 13 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 15 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 8 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 52 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 57 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 79 ms
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:23:29 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:33 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:23:33 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:33 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:23:33 1.220.101.194 GET /assets/index-JgQ0uPVA.js
+ HTTP  2026. 3. 4. PM 7:23:33 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:33 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/index-JgQ0uPVA.js
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/index-JgQ0uPVA.js
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 4 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 6 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 1 ms
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:23:34 1.220.101.194 Returned 304 in 2 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 200 in 2 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /assets/index-BdYsj7W3.js
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /assets/index-CzQtGQaJ.css
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 3 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 200 in 6 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /assets/man%20and%20robot%20working.gif
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /assets/Live%20chatbot.gif
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /assets/Loader%20cat.gif
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /img/1.png
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /img/2.PNG
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /img/3.PNG
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 15 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 14 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 15 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /img/4.PNG
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 8 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 54 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 62 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 78 ms
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 GET /favicon.ico
+ HTTP  2026. 3. 4. PM 7:25:15 1.220.101.194 Returned 304 in 2 ms

@@ -3,8 +3,11 @@ import React from 'react';
 import '../../style/tasks/gif-placeholder.css';
 
 const GIF_PLACEHOLDER_CLASSES = {
+  // Base wrapper class for all gif placeholder usages.
   wrapper: 'gif-placeholder',
+  // Gif image class (can be overridden by parent-specific CSS selectors).
   image: 'gif-image',
+  // Optional caption text class shown under gif.
   caption: 'gif-caption',
 };
 

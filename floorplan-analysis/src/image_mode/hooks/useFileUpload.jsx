@@ -23,11 +23,8 @@ export const useFileUpload = () => {
 
   // Generate preview image for UI
   const handleImageSelect = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewImage(e.target.result);
-    };
-    reader.readAsDataURL(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewImage(objectUrl);
   };
 
   // Upload image + metadata and return ZIP blob
