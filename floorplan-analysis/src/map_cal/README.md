@@ -3,7 +3,7 @@
 This module is reserved for map-calculation and result-analysis helpers.
 
 Planned responsibilities:
-- File extraction/parsing for GT uploads (`json`, `xml`, `toloformat`, etc.)
+- File extraction/parsing for GT uploads (`json`, `xml`, `yoloformat`, etc.)
 - Normalization of extracted map data per GT type
 - Calculation/analysis utilities for comparing result outputs
 

@@ -320,9 +320,11 @@ export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensio
     // Label key preference by mode:
     // space_ocr uses text when present, symbol_ocr uses size+detail, otherwise text/class.
     if (isSpaceOcrJsonFile(fileName) && o.text) {
-      label = o.text;
+      // For space_ocr text annotations, append recognition idx from JSON when available.
+      const hasIdx = o.idx !== undefined && o.idx !== null && o.idx !== '';
+      label = hasIdx ? `${o.text} [idx:${o.idx}]` : o.text;
     } else if (isSymbolOcrJsonFile(fileName)) {
-      label = `${o.size || ''} ${o.detail || ''}`.trim() || 'symbol_ocr';
+      label = 'symbol_ocr';
     } else if (o.text) {
       label = o.text;
     }
@@ -344,8 +346,13 @@ export const normalizeObjectsForRender = (fileName, json, roiTransform, dimensio
     };
 
     if (kind === 'symbol_ocr') {
+      const sizeText = String(o.size || '').trim();
+      const detailText = String(o.detail || '').trim();
       norm.sizePts = convertedSizePts;
       norm.detailPts = convertedDetailPts;
+      // Show independent labels for each symbol detection area; fallback when OCR is missing.
+      norm.sizeLabel = convertedSizePts.length ? (sizeText || 'No recog') : '';
+      norm.detailLabel = convertedDetailPts.length ? (detailText || 'No recog') : '';
     }
 
     out.push(norm);
@@ -480,7 +487,7 @@ export const drawAnnotations = (
         drawnCount++;
       }
 
-      if (showAnnotationText && o.label) {
+      if (showAnnotationText && o.label && o.kind !== 'symbol_ocr') {
         const bb = bboxFromPoints(pts);
         if (bb) {
           ctx.font = `bold ${FONT_SIZE}px Arial`;
@@ -525,6 +532,28 @@ export const drawAnnotations = (
         const detailPts = scalePointsForZoom(o.detailPts || [], z);
         drawPolyOutline(ctx, sizePts, '#00BFFF', 2 * z);
         drawPolyOutline(ctx, detailPts, '#FF4500', 2 * z);
+
+        if (showAnnotationText) {
+          const drawSymbolText = (symbolPts, text, boxColor) => {
+            if (!text || !symbolPts?.length) return;
+            const symbolBb = bboxFromPoints(symbolPts);
+            if (!symbolBb) return;
+
+            ctx.font = `bold ${FONT_SIZE}px Arial`;
+            const tw = ctx.measureText(text).width;
+            const labelWidth = tw + LABEL_PADDING * 2;
+            const pos = findLabelPosition(symbolBb, labelWidth, LABEL_HEIGHT);
+
+            ctx.fillStyle = boxColor;
+            ctx.fillRect(pos.x, pos.y, labelWidth, LABEL_HEIGHT);
+            ctx.fillStyle = 'white';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, pos.x + LABEL_PADDING, pos.y + LABEL_HEIGHT / 2);
+          };
+
+          drawSymbolText(sizePts, o.sizeLabel, '#00BFFF');
+          drawSymbolText(detailPts, o.detailLabel, '#FF4500');
+        }
       }
 
       if (o.kind === 'ocr_text' && o.dimensionAreaPts) {

@@ -5,10 +5,12 @@ import {
   normalizeObjectsForRender,
   randomColor,
   drawAnnotations,
+  bboxFromPoints,
 } from '../services/visualizationService.jsx';
 
 const MAX_RENDER_PIXELS = 3_000_000;
 const MAX_RENDER_SIDE = 4096;
+const MIN_ANNOTATION_RENDER_SCALE = 0.7;
 const GT_FIXED_PALETTE = [
   'hsl(135,70%,42%)',
   'hsl(155,70%,40%)',
@@ -38,6 +40,7 @@ export const useVisualization = (uploadedImage) => {
   const predictionClassMapRef = useRef({});
   const gtClassMapRef = useRef({});
   const classColorsRef = useRef({});
+  const aiDetectionsRef = useRef([]);
   const [hiddenDimensionIndices, setHiddenDimensionIndices] = useState(new Set());
   const [showPredictionLayer, setShowPredictionLayer] = useState(true);
   const [showGtLayer, setShowGtLayer] = useState(true);
@@ -64,6 +67,11 @@ export const useVisualization = (uploadedImage) => {
 
     return Math.min(1, pixelScale, sideScale);
   }, [originalWidth, originalHeight]);
+
+  // Keep annotation overlay readable by clamping to a minimum render scale.
+  const getAnnotationRenderScaleForZoom = useCallback((zoomLevel) => {
+    return Math.max(MIN_ANNOTATION_RENDER_SCALE, getRenderScaleForZoom(zoomLevel));
+  }, [getRenderScaleForZoom]);
 
   // Initialize image dimensions on load
   // Compute image size + fit-to-view zoom
@@ -196,7 +204,7 @@ export const useVisualization = (uploadedImage) => {
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
-    const renderScale = getRenderScaleForZoom(zoom);
+    const renderScale = getAnnotationRenderScaleForZoom(zoom);
     let shouldClear = true;
 
     if (showPredictionLayer) {
@@ -232,6 +240,40 @@ export const useVisualization = (uploadedImage) => {
     if (shouldClear) {
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     }
+
+    // Draw chatbot-driven detections after prediction/GT layers.
+    const detections = aiDetectionsRef.current;
+    if (detections.length > 0) {
+      const canvasWidth = canvasRef.current.width;
+      const canvasHeight = canvasRef.current.height;
+
+      detections.forEach((item) => {
+        const box = item?.box;
+        if (!Array.isArray(box) || box.length !== 4) return;
+
+        const [yMin, xMin, yMax, xMax] = box.map((value) => Number(value));
+        if (![yMin, xMin, yMax, xMax].every(Number.isFinite)) return;
+
+        const left = (xMin / 1000) * canvasWidth;
+        const top = (yMin / 1000) * canvasHeight;
+        const width = ((xMax - xMin) / 1000) * canvasWidth;
+        const height = ((yMax - yMin) / 1000) * canvasHeight;
+
+        // Keep AI detections visually distinct with a stronger blue stroke.
+        ctx.strokeStyle = item.color || '#2B07E3';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([]);
+        ctx.strokeRect(left, top, width, height);
+
+        const label = (item.label || '').trim();
+        if (showAnnotationText && label) {
+          ctx.fillStyle = 'rgba(43, 7, 227, 0.9)';
+          const fontSize = Math.max(11, Math.min(15, Math.round(12 * zoom)));
+          ctx.font = `600 ${fontSize}px sans-serif`;
+          ctx.fillText(label, left + 4, Math.max(14, top - 6));
+        }
+      });
+    }
   }, [
     zoom,
     showAnnotationText,
@@ -239,7 +281,7 @@ export const useVisualization = (uploadedImage) => {
     hiddenDimensionIndices,
     showPredictionLayer,
     showGtLayer,
-    getRenderScaleForZoom,
+    getAnnotationRenderScaleForZoom,
   ]);
 
   // Update view when dimensions or zoom changes
@@ -249,7 +291,7 @@ export const useVisualization = (uploadedImage) => {
     if (!originalWidth || !originalHeight || !canvasRef.current) return;
 
     const z = zoom;
-    const renderScale = getRenderScaleForZoom(z);
+    const renderScale = getAnnotationRenderScaleForZoom(z);
     const displayWidth = originalWidth * z;
     const displayHeight = originalHeight * z;
     const renderWidth = displayWidth * renderScale;
@@ -276,7 +318,7 @@ export const useVisualization = (uploadedImage) => {
     }
 
     redrawAnnotations();
-  }, [originalWidth, originalHeight, zoom, redrawAnnotations, getRenderScaleForZoom]);
+  }, [originalWidth, originalHeight, zoom, redrawAnnotations, getAnnotationRenderScaleForZoom]);
 
   const zoomIn = () => setZoom(prev => Math.min(prev * 1.1, 5));
   const zoomOut = () => setZoom(prev => Math.max(prev * 0.9, minZoomRef.current));
@@ -350,6 +392,58 @@ export const useVisualization = (uploadedImage) => {
       return newSet;
     });
   };
+
+  // Replace AI detection overlays using normalized [ymin,xmin,ymax,xmax] boxes.
+  const setAiDetections = useCallback((detections = []) => {
+    aiDetectionsRef.current = Array.isArray(detections) ? detections : [];
+    redrawAnnotations();
+  }, [redrawAnnotations]);
+
+  // Remove all AI overlays from canvas.
+  const clearAiDetections = useCallback(() => {
+    aiDetectionsRef.current = [];
+    redrawAnnotations();
+  }, [redrawAnnotations]);
+
+  // Collect OCR boxes from loaded result objects and show them as AI overlays.
+  const showOcrDetections = useCallback((query = '') => {
+    const searchTerm = String(query || '').toLowerCase().trim();
+    const allObjs = [
+      ...(predictionObjsRef.current || []),
+      ...(gtObjsRef.current || []),
+    ];
+
+    const ocrObjs = allObjs.filter((obj) => {
+      if (obj?.kind !== 'ocr_text') return false;
+      if (!searchTerm) return true;
+      return String(obj?.label || '').toLowerCase().includes(searchTerm);
+    });
+
+    if (!originalWidth || !originalHeight) {
+      return { count: 0, applied: false };
+    }
+
+    const overlays = ocrObjs
+      .map((obj) => {
+        const bbox = bboxFromPoints(obj?.polygonPts || []);
+        if (!bbox) return null;
+        const yMin = (bbox.ymin / originalHeight) * 1000;
+        const xMin = (bbox.xmin / originalWidth) * 1000;
+        const yMax = (bbox.ymax / originalHeight) * 1000;
+        const xMax = (bbox.xmax / originalWidth) * 1000;
+        return {
+          label: obj?.label || obj?._cls || 'ocr',
+          box: [yMin, xMin, yMax, xMax],
+          color: '#2B07E3',
+        };
+      })
+      .filter(Boolean);
+
+    aiDetectionsRef.current = overlays;
+    redrawAnnotations();
+
+    return { count: overlays.length, applied: true };
+  }, [originalWidth, originalHeight, redrawAnnotations]);
 
   // Keep mutable zoom ref aligned with React state.
   useEffect(() => {
@@ -517,5 +611,8 @@ export const useVisualization = (uploadedImage) => {
     handleImageLoad,
     currentObjsRef,
     dimensionAreasRef,
+    setAiDetections,
+    clearAiDetections,
+    showOcrDetections,
   };
 };

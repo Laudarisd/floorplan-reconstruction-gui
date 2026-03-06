@@ -13,6 +13,7 @@ import HistoryPanel from './image_mode/components/history/HistoryPanel';
 import MapMetricsPanel from './image_mode/components/metrics/MapMetricsPanel';
 import DwgVisualizationPanel from './dwg_mode/components/DwgVisualizationPanel';
 import DwgFileUploadPanel from './dwg_mode/components/upload/DwgFileUploadPanel';
+import ReconstructorAIChatbot from './chatbot/components/ReconstructorAIChatbot';
 
 function App() {
   const isImageFile = (name) => /\.(png|jpg|jpeg|bmp|gif|webp)$/i.test(name || '');
@@ -54,6 +55,8 @@ function App() {
   const [dwgUploadData, setDwgUploadData] = useState(null);
   const [dwgHistoryEntries, setDwgHistoryEntries] = useState([]);
   const [activeDwgHistoryId, setActiveDwgHistoryId] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [visualizationTools, setVisualizationTools] = useState(null);
 
   // Handle image-mode upload completion (ZIP blob + preview image).
   const handleZipReceived = async (blob, imageDataUrl, imageName = '') => {
@@ -221,7 +224,7 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className={`App ${isChatOpen ? 'chatbot-open' : ''}`.trim()}>
       <ServerConnectionPanel
         serverConfig={serverConfig}
         setServerConfig={setServerConfig}
@@ -283,6 +286,7 @@ function App() {
               uploadedImage={uploadedImage}
               loading={loading.visualization}
               setLoading={setLoading}
+              onToolsReady={setVisualizationTools}
             />
           )}
           {selectedMode === 'dwg' ? (
@@ -342,6 +346,17 @@ function App() {
       </div>
 
       <Footer />
+      <ReconstructorAIChatbot
+        onOpenChange={setIsChatOpen}
+        visualizationTools={selectedMode === 'image' ? visualizationTools : null}
+        chatContext={{
+          selectedMode,
+          selectedFile: selectedMode === 'image' ? selectedFile : dwgSelectedFile,
+          zipData: selectedMode === 'image' ? zipData : dwgZipData,
+          uploadedImage: selectedMode === 'image' ? uploadedImage : selectedDwgLayer?.url,
+          currentImageName,
+        }}
+      />
     </div>
   );
 }

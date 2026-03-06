@@ -51,6 +51,7 @@ const VisualizationPanel = ({
   uploadedImage,
   loading,
   setLoading,
+  onToolsReady,
 }) => {
   // Main visualization hook (zoom/pan/canvas draw state).
   const viz = useVisualization(uploadedImage);
@@ -60,6 +61,23 @@ const VisualizationPanel = ({
   const [analyzeFile, setAnalyzeFile] = useState(null);
   // Analyze status text shown under upload input.
   const [analyzeStatus, setAnalyzeStatus] = useState('');
+
+  useEffect(() => {
+    // Expose visualization tools so chatbot can draw/clear OCR and AI detections.
+    if (!onToolsReady) return undefined;
+
+    onToolsReady({
+      setAiDetections: viz.setAiDetections,
+      clearAiDetections: viz.clearAiDetections,
+      showOcrDetections: viz.showOcrDetections,
+      redrawAnnotations: viz.redrawAnnotations,
+    });
+
+    return () => {
+      onToolsReady(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onToolsReady, viz.setAiDetections, viz.clearAiDetections, viz.showOcrDetections, viz.redrawAnnotations]);
 
   // Parse selected JSON and draw annotations on canvas
   useEffect(() => {
